@@ -10,7 +10,7 @@
 - [x] Configure `globals.css` with exact design tokens for both themes:
   - **Softly Aesthetic (Landing):** `#FDFCF8` bg, Sage `#E8EFE8`, Lavender `#EFEDF4`, Coral `#FFB7B2`, Dark Stone `#292524`, Muted `#78716C`, floating blobs keyframes, noise grain overlay.
   - **Chalo Brand Theme (App/Dashboard):** Burgundy `#6f1b1b` bg, Card `#9a2121`, Gold `#d4b454`, Hover `#b45f06`, Border `#c8833b`.
-- [ ] Establish shared mock data and TypeScript interfaces for rides, users, and vehicles.
+- [x] Establish shared mock data and TypeScript interfaces for rides, users, and vehicles.
 
 ---
 

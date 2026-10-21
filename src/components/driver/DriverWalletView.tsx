@@ -123,7 +123,8 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
               Flat 10% Platform Cut &bull; Keep 90% of Every Fare
             </div>
             <div className="text-xs text-stone-300">
-              Zero hidden technology fees. Fares deposit immediately into your wallet after each completed ride.
+              Zero hidden technology fees. Fares deposit immediately into your
+              wallet after each completed ride.
             </div>
           </div>
         </div>
@@ -138,7 +139,9 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
           <h2 className="text-base font-bold text-white uppercase tracking-wider text-[#d4b454]">
             Payout &amp; Withdrawal History
           </h2>
-          <span className="text-xs text-stone-300">{withdrawals.length} Total Requests</span>
+          <span className="text-xs text-stone-300">
+            {withdrawals.length} Total Requests
+          </span>
         </div>
 
         <div className="space-y-3">
@@ -163,7 +166,9 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
                   </span>
                 </div>
                 <div className="text-stone-300">
-                  Transaction ID: <span className="font-mono text-white">{w.id}</span> &bull; {w.createdAt}
+                  Transaction ID:{" "}
+                  <span className="font-mono text-white">{w.id}</span> &bull;{" "}
+                  {w.createdAt}
                 </div>
               </div>
 
@@ -171,7 +176,9 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
                 <div className="text-lg font-black text-[#d4b454]">
                   - ৳{w.amount}.00
                 </div>
-                <span className="text-[10px] text-stone-300">0% Processing Fee</span>
+                <span className="text-[10px] text-stone-300">
+                  0% Processing Fee
+                </span>
               </div>
             </div>
           ))}
@@ -284,4 +291,3 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
 };
 
 export default DriverWalletView;
-
