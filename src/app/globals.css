@@ -11,18 +11,18 @@
   --soft-muted: #78716C;
   --soft-border: rgba(41, 37, 36, 0.08);
 
-  /* Chalo App/Dashboard Brand Theme */
-  --bg-main: #6f1b1b;
-  --bg-card: #9a2121;
-  --bg-card-light: #ad2727;
-  --accent-primary: #d4b454;
-  --accent-hover: #b45f06;
-  --border-color: #c8833b;
-  --text-light: #ffffff;
-  --text-dark: #2a2a2a;
-  --success: #4caf50;
-  --warning: #ff9800;
-  --error: #f44336;
+  /* Chalo App/Dashboard Harmonized Brand Theme */
+  --bg-main: #FDFCF8;
+  --bg-card: #FFFFFF;
+  --bg-card-light: #F7F6F0;
+  --accent-primary: #FFB7B2;
+  --accent-hover: #FF9E98;
+  --border-color: #E7E5E4;
+  --text-light: #FDFCF8;
+  --text-dark: #292524;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
 }
 
 @theme {

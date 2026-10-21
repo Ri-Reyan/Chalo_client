@@ -84,18 +84,18 @@ function RegisterContent() {
       }
 
       if (role === "CUSTOMER") {
-        router.push("/dashboard/customer");
+        router.push("/customer");
       } else {
-        router.push("/dashboard/driver");
+        router.push("/driver");
       }
     }, 600);
   };
 
   return (
     <div className="w-full max-w-115 mx-auto animate-in fade-in duration-300">
-      <div className="bg-[#9a2121] border border-[#c8833b] rounded-3xl p-7 sm:p-9 shadow-2xl">
+      <div className="bg-white border border-stone-200/90 rounded-3xl p-7 sm:p-9 shadow-xl shadow-stone-200/50">
         {/* Role Switcher Tabs */}
-        <div className="flex bg-[#6f1b1b] p-1.5 rounded-2xl mb-6 border border-[#c8833b]/40">
+        <div className="flex bg-stone-100/90 p-1.5 rounded-2xl mb-6 border border-stone-200/80">
           <button
             type="button"
             onClick={() => {
@@ -104,8 +104,8 @@ function RegisterContent() {
             }}
             className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
               role === "CUSTOMER"
-                ? "bg-[#d4b454] text-[#2a2a2a] shadow-sm"
-                : "text-stone-300 hover:text-white"
+                ? "bg-[#292524] text-white shadow-xs"
+                : "text-stone-600 hover:text-[#292524]"
             }`}
           >
             <span>🚶</span>
@@ -119,8 +119,8 @@ function RegisterContent() {
             }}
             className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
               role === "DRIVER"
-                ? "bg-[#d4b454] text-[#2a2a2a] shadow-sm"
-                : "text-stone-300 hover:text-white"
+                ? "bg-[#292524] text-white shadow-xs"
+                : "text-stone-600 hover:text-[#292524]"
             }`}
           >
             <span>🏍️</span>
@@ -130,12 +130,12 @@ function RegisterContent() {
 
         {/* Headline */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#292524] tracking-tight">
             {role === "CUSTOMER"
               ? "Create your Customer account"
               : "Register as a Driver"}
           </h1>
-          <p className="mt-1.5 text-xs sm:text-sm text-stone-200">
+          <p className="mt-1.5 text-xs sm:text-sm text-stone-500">
             {role === "CUSTOMER"
               ? "Fast, calm, and zero-surge rides across your city"
               : "Earn with our flat 10% platform fee and take home 90%"}
@@ -143,22 +143,22 @@ function RegisterContent() {
         </div>
 
         {/* Quick Demo Pre-fill Pill Bar */}
-        <div className="mb-6 bg-[#6f1b1b]/80 border border-[#c8833b]/50 rounded-2xl p-3 text-center">
-          <span className="text-[11px] font-semibold text-[#d4b454] uppercase tracking-wider block mb-2">
+        <div className="mb-6 bg-stone-50 border border-stone-200/90 rounded-2xl p-3 text-center">
+          <span className="text-[11px] font-bold text-[#78716C] uppercase tracking-wider block mb-2">
             ⚡ Quick Prototype Demo
           </span>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => handleQuickFill("CUSTOMER")}
-              className="flex-1 py-1.5 px-2 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-medium text-white transition-colors"
+              className="flex-1 py-1.5 px-2 bg-white hover:bg-stone-100 rounded-xl text-xs font-semibold text-stone-700 border border-stone-200 shadow-2xs transition-colors"
             >
               Fill Customer Data
             </button>
             <button
               type="button"
               onClick={() => handleQuickFill("DRIVER")}
-              className="flex-1 py-1.5 px-2 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-medium text-white transition-colors"
+              className="flex-1 py-1.5 px-2 bg-white hover:bg-stone-100 rounded-xl text-xs font-semibold text-stone-700 border border-stone-200 shadow-2xs transition-colors"
             >
               Fill Driver Data
             </button>
@@ -167,16 +167,16 @@ function RegisterContent() {
 
         {/* Error Alert */}
         {errorMessage && (
-          <div className="mb-5 bg-[#f44336]/20 border border-[#f44336] rounded-xl p-3 text-xs text-white flex items-center gap-2">
+          <div className="mb-5 bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs text-rose-800 flex items-center gap-2">
             <span>⚠️</span>
             <span>{errorMessage}</span>
           </div>
         )}
 
-        {/* Form (Strictly aligned with backend registerSchema: name, email, password, role, vehicleType) */}
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-stone-200 mb-1">
+            <label className="block text-xs font-bold text-[#292524] mb-1">
               Full Name
             </label>
             <input
@@ -185,12 +185,12 @@ function RegisterContent() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Sarah Khan"
-              className="w-full h-11 px-3.5 bg-[#f5f5f5] text-[#2a2a2a] placeholder-stone-400 rounded-xl border border-[#c8833b] text-sm focus:outline-none focus:ring-2 focus:ring-[#d4b454] transition-all"
+              className="w-full h-11 px-3.5 bg-stone-50 text-[#292524] placeholder-stone-400 rounded-xl border border-stone-200 text-sm focus:outline-none focus:bg-white focus:border-[#FFB7B2] focus:ring-2 focus:ring-[#FFB7B2]/30 transition-all font-medium"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-stone-200 mb-1">
+            <label className="block text-xs font-bold text-[#292524] mb-1">
               Email Address
             </label>
             <input
@@ -199,14 +199,14 @@ function RegisterContent() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="e.g. customer@example.com"
-              className="w-full h-11 px-3.5 bg-[#f5f5f5] text-[#2a2a2a] placeholder-stone-400 rounded-xl border border-[#c8833b] text-sm focus:outline-none focus:ring-2 focus:ring-[#d4b454] transition-all"
+              className="w-full h-11 px-3.5 bg-stone-50 text-[#292524] placeholder-stone-400 rounded-xl border border-stone-200 text-sm focus:outline-none focus:bg-white focus:border-[#FFB7B2] focus:ring-2 focus:ring-[#FFB7B2]/30 transition-all font-medium"
             />
           </div>
 
           {/* Vehicle Type (Only required for Drivers) */}
           {role === "DRIVER" && (
             <div>
-              <label className="block text-xs font-semibold text-stone-200 mb-1.5">
+              <label className="block text-xs font-bold text-[#292524] mb-1.5">
                 Vehicle Type (Required for Driver)
               </label>
               <div className="grid grid-cols-2 gap-3">
@@ -215,8 +215,8 @@ function RegisterContent() {
                   onClick={() => setVehicleType("BIKE")}
                   className={`py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
                     vehicleType === "BIKE"
-                      ? "bg-[#d4b454] text-[#2a2a2a] border-[#d4b454] shadow-xs"
-                      : "bg-[#6f1b1b] text-white border-stone-500/50 hover:bg-[#7e1f1f]"
+                      ? "bg-[#FFB7B2]/20 text-[#292524] border-[#FFB7B2] ring-2 ring-[#FFB7B2] shadow-xs"
+                      : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
                   }`}
                 >
                   <span>🏍️</span>
@@ -227,8 +227,8 @@ function RegisterContent() {
                   onClick={() => setVehicleType("CAR")}
                   className={`py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
                     vehicleType === "CAR"
-                      ? "bg-[#d4b454] text-[#2a2a2a] border-[#d4b454] shadow-xs"
-                      : "bg-[#6f1b1b] text-white border-stone-500/50 hover:bg-[#7e1f1f]"
+                      ? "bg-[#FFB7B2]/20 text-[#292524] border-[#FFB7B2] ring-2 ring-[#FFB7B2] shadow-xs"
+                      : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
                   }`}
                 >
                   <span>🚗</span>
@@ -239,7 +239,7 @@ function RegisterContent() {
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-stone-200 mb-1">
+            <label className="block text-xs font-bold text-[#292524] mb-1">
               Password
             </label>
             <input
@@ -248,14 +248,14 @@ function RegisterContent() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Min 8 characters"
-              className="w-full h-11 px-3.5 bg-[#f5f5f5] text-[#2a2a2a] placeholder-stone-400 rounded-xl border border-[#c8833b] text-sm focus:outline-none focus:ring-2 focus:ring-[#d4b454] transition-all"
+              className="w-full h-11 px-3.5 bg-stone-50 text-[#292524] placeholder-stone-400 rounded-xl border border-stone-200 text-sm focus:outline-none focus:bg-white focus:border-[#FFB7B2] focus:ring-2 focus:ring-[#FFB7B2]/30 transition-all font-medium"
             />
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 mt-2 rounded-xl bg-[#d4b454] hover:bg-[#b45f06] text-[#2a2a2a] hover:text-white font-bold text-sm tracking-wide transition-all duration-200 hover:scale-[0.99] active:scale-[0.98] shadow-lg flex items-center justify-center gap-2"
+            className="w-full h-12 mt-2 rounded-xl bg-[#FFB7B2] hover:bg-[#FF9E98] text-[#292524] font-bold text-sm tracking-wide transition-all duration-200 hover:shadow-md active:scale-[0.99] flex items-center justify-center gap-2"
           >
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-stone-900 border-t-transparent rounded-full animate-spin" />
@@ -268,11 +268,11 @@ function RegisterContent() {
         </form>
 
         {/* Footer Link to Sign In */}
-        <div className="mt-7 pt-5 border-t border-[#c8833b]/40 text-center text-xs text-stone-200">
+        <div className="mt-7 pt-5 border-t border-stone-200 text-center text-xs text-stone-500">
           Already registered?{" "}
           <Link
             href="/login"
-            className="font-bold text-[#d4b454] hover:underline"
+            className="font-bold text-[#292524] hover:underline"
           >
             Sign in to your account
           </Link>
@@ -286,8 +286,8 @@ export default function RegisterPage() {
   return (
     <Suspense
       fallback={
-        <div className="text-white text-sm font-semibold flex items-center gap-2">
-          <div className="w-4 h-4 border-2 border-[#d4b454] border-t-transparent rounded-full animate-spin" />
+        <div className="text-stone-700 text-sm font-semibold flex items-center gap-2">
+          <div className="w-4 h-4 border-2 border-[#292524] border-t-transparent rounded-full animate-spin" />
           <span>Loading Chalo registration...</span>
         </div>
       }

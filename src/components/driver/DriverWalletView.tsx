@@ -84,16 +84,16 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Balance Banner */}
-      <div className="bg-[#9a2121] border border-[#c8833b]/60 rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+      <div className="bg-gradient-to-br from-[#292524] to-stone-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative overflow-hidden">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#6f1b1b] border border-[#c8833b]/40 text-[#d4b454] text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[#FFB7B2] text-xs font-bold uppercase tracking-wider mb-2">
             <span>💳</span>
             <span>Driver Payout Account</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
             Available Earnings Balance
           </h1>
-          <div className="text-4xl sm:text-5xl font-black text-[#d4b454] mt-2">
+          <div className="text-4xl sm:text-5xl font-black text-white mt-2">
             ৳{balance.toFixed(2)}
           </div>
           <span className="text-xs text-emerald-400 font-semibold mt-1 block">
@@ -108,38 +108,38 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
             setShowModal(true);
           }}
           disabled={balance < 100}
-          className="h-14 px-8 rounded-2xl bg-[#d4b454] hover:bg-[#b45f06] text-[#2a2a2a] hover:text-white font-extrabold text-base tracking-wide transition-all shadow-xl hover:scale-105 active:scale-95 disabled:opacity-50 shrink-0"
+          className="h-14 px-8 rounded-2xl bg-[#FFB7B2] hover:bg-[#FF9E98] text-[#292524] font-extrabold text-base tracking-wide transition-all shadow-md hover:scale-105 active:scale-95 disabled:opacity-50 shrink-0"
         >
           Request Withdrawal &rarr;
         </button>
       </div>
 
       {/* Commission Transparency Banner */}
-      <div className="bg-[#6f1b1b] border border-[#c8833b]/50 rounded-3xl p-5 sm:p-6 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="bg-white border border-stone-200/80 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="text-2xl">🤝</span>
           <div>
-            <div className="text-sm font-bold text-white">
+            <div className="text-sm font-bold text-[#292524]">
               Flat 10% Platform Cut &bull; Keep 90% of Every Fare
             </div>
-            <div className="text-xs text-stone-300">
+            <div className="text-xs text-stone-500">
               Zero hidden technology fees. Fares deposit immediately into your
               wallet after each completed ride.
             </div>
           </div>
         </div>
-        <div className="text-xs font-bold text-[#d4b454] bg-[#9a2121] px-3 py-1.5 rounded-xl border border-[#c8833b]/40 shrink-0">
+        <div className="text-xs font-bold text-emerald-800 bg-[#E8EFE8] border border-emerald-200 px-3 py-1.5 rounded-xl shrink-0">
           90% Net Take-Home
         </div>
       </div>
 
       {/* Withdrawal Transactions History */}
-      <div className="bg-[#9a2121] border border-[#c8833b]/60 rounded-3xl p-6 sm:p-8 shadow-xl space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-[#c8833b]/40">
-          <h2 className="text-base font-bold text-white uppercase tracking-wider text-[#d4b454]">
+      <div className="bg-white border border-stone-200/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-stone-200">
+          <h2 className="text-base font-bold text-[#292524] uppercase tracking-wider">
             Payout &amp; Withdrawal History
           </h2>
-          <span className="text-xs text-stone-300">
+          <span className="text-xs text-stone-500">
             {withdrawals.length} Total Requests
           </span>
         </div>
@@ -148,35 +148,35 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
           {withdrawals.map((w) => (
             <div
               key={w.id}
-              className="bg-[#6f1b1b] border border-[#c8833b]/40 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+              className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-white text-sm">
+                  <span className="font-bold text-[#292524] text-sm">
                     {w.method} Payout ({w.account})
                   </span>
                   <span
                     className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
                       w.status === "COMPLETED"
-                        ? "bg-emerald-950/70 text-emerald-400 border border-emerald-500/40"
-                        : "bg-amber-950/70 text-amber-400 border border-amber-500/40"
+                        ? "bg-[#E8EFE8] text-emerald-800 border border-emerald-200"
+                        : "bg-amber-50 text-amber-800 border border-amber-200"
                     }`}
                   >
                     {w.status}
                   </span>
                 </div>
-                <div className="text-stone-300">
+                <div className="text-stone-500">
                   Transaction ID:{" "}
-                  <span className="font-mono text-white">{w.id}</span> &bull;{" "}
+                  <span className="font-mono text-[#292524]">{w.id}</span> &bull;{" "}
                   {w.createdAt}
                 </div>
               </div>
 
               <div className="text-left sm:text-right">
-                <div className="text-lg font-black text-[#d4b454]">
+                <div className="text-lg font-black text-rose-600">
                   - ৳{w.amount}.00
                 </div>
-                <span className="text-[10px] text-stone-300">
+                <span className="text-[10px] text-stone-500">
                   0% Processing Fee
                 </span>
               </div>
@@ -187,14 +187,14 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
 
       {/* Withdrawal Request Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#9a2121] border border-[#c8833b] rounded-3xl p-7 max-w-md w-full shadow-2xl space-y-4 animate-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-[#c8833b]/40">
-              <h3 className="text-lg font-bold text-white">Request Payout</h3>
+        <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-stone-200 rounded-3xl p-7 max-w-md w-full shadow-2xl space-y-4 animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-200">
+              <h3 className="text-lg font-bold text-[#292524]">Request Payout</h3>
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="text-stone-300 hover:text-white font-bold"
+                className="text-stone-400 hover:text-[#292524] font-bold"
               >
                 ✕
               </button>
@@ -202,7 +202,7 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
 
             <form onSubmit={handleWithdrawSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-stone-200 mb-1">
+                <label className="block text-xs font-bold text-stone-700 mb-1">
                   Payout Method
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -213,8 +213,8 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
                       onClick={() => setMethod(m)}
                       className={`py-2 rounded-xl text-xs font-bold border transition-all ${
                         method === m
-                          ? "bg-[#d4b454] text-[#2a2a2a] border-[#d4b454]"
-                          : "bg-[#6f1b1b] text-white border-stone-500/40"
+                          ? "bg-[#FFB7B2]/25 text-[#292524] border-[#FFB7B2] shadow-2xs font-bold"
+                          : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
                       }`}
                     >
                       {m}
@@ -224,7 +224,7 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-stone-200 mb-1">
+                <label className="block text-xs font-bold text-stone-700 mb-1">
                   Withdrawal Amount (৳)
                 </label>
                 <input
@@ -235,15 +235,15 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder={`Max ৳${balance.toFixed(2)}`}
-                  className="w-full h-11 px-3.5 bg-[#f5f5f5] text-[#2a2a2a] rounded-xl border border-[#c8833b] text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#d4b454]"
+                  className="w-full h-11 px-3.5 bg-stone-50 text-[#292524] rounded-xl border border-stone-200 text-sm font-bold focus:outline-none focus:bg-white focus:border-[#FFB7B2] focus:ring-2 focus:ring-[#FFB7B2]/30"
                 />
-                <span className="text-[11px] text-stone-300 mt-1 block">
+                <span className="text-[11px] text-stone-500 mt-1 block">
                   Available: ৳{balance.toFixed(2)} (Min ৳100)
                 </span>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-stone-200 mb-1">
+                <label className="block text-xs font-bold text-stone-700 mb-1">
                   Recipient Account Details
                 </label>
                 <input
@@ -252,12 +252,12 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
                   value={accountNumber}
                   onChange={(e) => setAccountNumber(e.target.value)}
                   placeholder="e.g. 01812-000000 or Bank A/C"
-                  className="w-full h-11 px-3.5 bg-[#f5f5f5] text-[#2a2a2a] rounded-xl border border-[#c8833b] text-sm focus:outline-none focus:ring-2 focus:ring-[#d4b454]"
+                  className="w-full h-11 px-3.5 bg-stone-50 text-[#292524] rounded-xl border border-stone-200 text-sm focus:outline-none focus:bg-white focus:border-[#FFB7B2] focus:ring-2 focus:ring-[#FFB7B2]/30"
                 />
               </div>
 
               {error && (
-                <div className="text-xs text-rose-300 font-semibold text-center">
+                <div className="text-xs text-rose-600 font-semibold text-center">
                   {error}
                 </div>
               )}
@@ -266,14 +266,14 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs"
+                  className="flex-1 py-3 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs border border-stone-200 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 py-3 rounded-xl bg-[#d4b454] hover:bg-[#b45f06] text-[#2a2a2a] hover:text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
+                  className="flex-1 py-3 rounded-xl bg-[#FFB7B2] hover:bg-[#FF9E98] text-[#292524] font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <div className="w-4 h-4 border-2 border-stone-900 border-t-transparent rounded-full animate-spin" />

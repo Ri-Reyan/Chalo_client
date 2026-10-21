@@ -77,171 +77,152 @@ export const RideHistoryView: React.FC<RideHistoryViewProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Header */}
-      <div className="bg-[#9a2121] border border-[#c8833b]/60 rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white border border-stone-200/80 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-bold text-[#d4b454] uppercase tracking-wider block mb-1">
+          <span className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-1">
             Trip Records & Receipts
           </span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#292524]">
             Ride History
           </h1>
-          <p className="mt-1 text-xs sm:text-sm text-stone-200">
+          <p className="mt-1 text-xs sm:text-sm text-stone-500">
             View detailed trip breakdowns, driver details, and receipts for all your travels.
           </p>
         </div>
 
-        <div className="bg-[#6f1b1b] border border-[#c8833b]/50 rounded-2xl px-5 py-3 text-center sm:text-right shrink-0">
-          <span className="text-[11px] text-stone-300 block">Total Trips Completed</span>
-          <div className="text-2xl font-black text-[#d4b454]">
+        <div className="bg-stone-50 border border-stone-200/80 rounded-2xl px-5 py-3 text-center sm:text-right shrink-0">
+          <span className="text-[11px] text-stone-500 block">Total Trips Completed</span>
+          <div className="text-2xl font-black text-[#292524]">
             {allRides.length} Trips
           </div>
         </div>
       </div>
 
       {/* Rides List */}
-      <div className="space-y-4">
-        {allRides.map((rideItem) => (
+      <div className="space-y-3.5">
+        {allRides.map((ride) => (
           <div
-            key={rideItem.id}
-            className="bg-[#9a2121] border border-[#c8833b]/50 rounded-3xl p-5 sm:p-6 shadow-md hover:border-[#d4b454]/80 transition-all"
+            key={ride.id}
+            className="bg-white border border-stone-200/80 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-stone-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
           >
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-full bg-[#6f1b1b] border border-[#c8833b]/40 flex items-center justify-center text-sm">
-                    {rideItem.vehicleType === "BIKE" ? "🏍️" : "🚗"}
+            <div className="flex items-start sm:items-center gap-3.5">
+              <span className="w-10 h-10 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center text-lg shrink-0">
+                {ride.vehicleType === "BIKE" ? "🏍️" : "🚗"}
+              </span>
+
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-[#292524]">
+                    {ride.pickup} → {ride.destination}
                   </span>
-                  <div>
-                    <span className="text-xs font-bold text-white">
-                      {rideItem.vehicleType === "BIKE" ? "Motorbike Ride" : "Car Ride"}
-                    </span>
-                    <span className="text-[11px] text-stone-300 ml-2">
-                      &bull; {rideItem.createdAt}
-                    </span>
-                  </div>
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-[#E8EFE8] text-emerald-800 border border-emerald-200">
+                    {ride.status}
+                  </span>
                 </div>
 
-                <div className="text-sm font-semibold text-white pl-11">
-                  <span className="text-emerald-400">From:</span> {rideItem.pickup}
-                  <span className="mx-2 text-[#d4b454]">&rarr;</span>
-                  <span className="text-rose-400">To:</span> {rideItem.destination}
-                </div>
-
-                <div className="text-xs text-stone-300 pl-11 flex flex-wrap items-center gap-3">
-                  <span>Driver: <strong className="text-white">{rideItem.driver.name}</strong> ({rideItem.driver.rating})</span>
+                <div className="text-xs text-stone-500 mt-1 flex flex-wrap items-center gap-2 sm:gap-3">
+                  <span>{ride.createdAt}</span>
                   <span>&bull;</span>
-                  <span>Vehicle: {rideItem.driver.vehicleModel}</span>
+                  <span>{ride.distanceKm} km</span>
                   <span>&bull;</span>
-                  <span>Distance: {rideItem.distanceKm} km</span>
+                  <span>Driver: {ride.driver.name}</span>
                 </div>
               </div>
+            </div>
 
-              {/* Price & Actions */}
-              <div className="flex md:flex-col items-center md:items-end justify-between md:justify-center border-t md:border-t-0 border-[#c8833b]/30 pt-3 md:pt-0 shrink-0">
-                <div className="text-left md:text-right">
-                  <div className="text-xl font-black text-[#d4b454]">
-                    ৳{rideItem.fare}.00
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/40 px-2 py-0.5 rounded">
-                    CAPTURED (Paid)
-                  </span>
-                </div>
+            <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-stone-200">
+              <div className="text-right">
+                <span className="text-xs text-stone-500 block sm:hidden">Fare:</span>
+                <span className="text-base font-extrabold text-[#292524]">
+                  ৳{ride.fare}.00
+                </span>
+              </div>
 
-                <div className="flex items-center gap-2 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedReceipt(rideItem)}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-[#6f1b1b] hover:bg-[#7e1f1f] text-stone-200 font-semibold border border-[#c8833b]/40 transition-colors"
-                  >
-                    View Receipt
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onRebook(rideItem.pickup, rideItem.destination)}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-[#d4b454] hover:bg-[#b45f06] text-[#2a2a2a] hover:text-white font-bold transition-all shadow-xs"
-                  >
-                    Rebook
-                  </button>
-                </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedReceipt(ride)}
+                  className="text-xs px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold border border-stone-200 transition-colors"
+                >
+                  Receipt
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onRebook(ride.pickup, ride.destination)}
+                  className="text-xs px-3 py-1.5 rounded-lg bg-[#FFB7B2] hover:bg-[#FF9E98] text-[#292524] font-bold shadow-2xs transition-colors"
+                >
+                  Book Again
+                </button>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Detailed Receipt Modal */}
+      {/* Printable Receipt Modal */}
       {selectedReceipt && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#9a2121] border border-[#c8833b] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 animate-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-[#c8833b]/40">
-              <span className="text-xs font-bold text-[#d4b454] uppercase tracking-wider">
-                Official Chalo Trip Receipt
-              </span>
+        <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-stone-200 rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl space-y-4 animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-stone-200 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="relative w-6 h-6 rounded-full bg-[#FFB7B2] flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-white" />
+                </div>
+                <span className="text-base font-bold text-[#292524]">Chalo Trip Receipt</span>
+              </div>
               <button
                 type="button"
                 onClick={() => setSelectedReceipt(null)}
-                className="text-stone-300 hover:text-white text-lg font-bold"
+                className="text-stone-400 hover:text-[#292524] text-lg font-bold"
               >
                 ✕
               </button>
             </div>
 
-            <div className="text-center py-2">
-              <span className="text-xs text-stone-300">Total Charged</span>
-              <div className="text-3xl font-black text-[#d4b454]">
-                ৳{selectedReceipt.fare}.00
-              </div>
-              <span className="text-[11px] text-emerald-400 font-bold">
-                ✓ Cashless Settlement Captured
-              </span>
+            <div className="text-xs text-stone-500 space-y-1">
+              <div>Receipt ID: <span className="font-mono text-[#292524]">{selectedReceipt.id}</span></div>
+              <div>Date &amp; Time: <span className="text-[#292524] font-medium">{selectedReceipt.createdAt}</span></div>
+              <div>Vehicle: <span className="text-[#292524] font-medium">{selectedReceipt.vehicleType === "BIKE" ? "Motorbike" : "Car"}</span></div>
+              <div>Driver: <span className="text-[#292524] font-medium">{selectedReceipt.driver.name} ({selectedReceipt.driver.plateNumber})</span></div>
             </div>
 
-            <div className="bg-[#6f1b1b] border border-[#c8833b]/40 rounded-2xl p-4 text-xs space-y-2">
-              <div className="flex justify-between text-stone-300">
-                <span>Trip ID:</span>
-                <span className="font-mono text-white">{selectedReceipt.id}</span>
+            <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 text-xs space-y-2">
+              <div className="flex justify-between text-stone-600">
+                <span>From:</span>
+                <span className="font-semibold text-[#292524]">{selectedReceipt.pickup}</span>
               </div>
-              <div className="flex justify-between text-stone-300">
-                <span>Date & Time:</span>
-                <span className="text-white">{selectedReceipt.createdAt}</span>
+              <div className="flex justify-between text-stone-600">
+                <span>To:</span>
+                <span className="font-semibold text-[#292524]">{selectedReceipt.destination}</span>
               </div>
-              <div className="flex justify-between text-stone-300">
-                <span>Vehicle:</span>
-                <span className="text-white">{selectedReceipt.driver.vehicleModel}</span>
-              </div>
-              <div className="flex justify-between text-stone-300">
-                <span>Driver:</span>
-                <span className="text-white">{selectedReceipt.driver.name}</span>
-              </div>
-              <div className="border-t border-[#c8833b]/30 pt-2 flex justify-between text-stone-300">
+              <div className="flex justify-between text-stone-600">
                 <span>Distance:</span>
-                <span className="text-white">{selectedReceipt.distanceKm} km</span>
+                <span className="font-semibold text-[#292524]">{selectedReceipt.distanceKm} km</span>
               </div>
-              <div className="flex justify-between text-emerald-400 font-bold">
-                <span>Surge Multiplier:</span>
-                <span>0.0x (Flat Rate Guarantee)</span>
+              <div className="flex justify-between text-emerald-700 font-semibold border-t border-stone-200 pt-2">
+                <span>Surge Charge:</span>
+                <span>৳0.00 (Zero Surge Guaranteed)</span>
+              </div>
+              <div className="flex justify-between text-sm font-extrabold text-[#292524] border-t border-stone-300 pt-2">
+                <span>Total Amount Paid:</span>
+                <span>৳{selectedReceipt.fare}.00</span>
               </div>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => setSelectedReceipt(null)}
-                className="flex-1 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition-colors"
+                onClick={() => window.print()}
+                className="flex-1 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs border border-stone-200 transition-colors"
               >
-                Close
+                🖨️ Print
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  const pick = selectedReceipt.pickup;
-                  const dest = selectedReceipt.destination;
-                  setSelectedReceipt(null);
-                  onRebook(pick, dest);
-                }}
-                className="flex-1 py-3 rounded-xl bg-[#d4b454] hover:bg-[#b45f06] text-[#2a2a2a] hover:text-white font-bold text-xs transition-colors shadow-md"
+                onClick={() => setSelectedReceipt(null)}
+                className="flex-1 py-2.5 rounded-xl bg-[#FFB7B2] hover:bg-[#FF9E98] text-[#292524] font-bold text-xs transition-colors"
               >
-                Rebook Route →
+                Close
               </button>
             </div>
           </div>
@@ -252,4 +233,3 @@ export const RideHistoryView: React.FC<RideHistoryViewProps> = ({
 };
 
 export default RideHistoryView;
-

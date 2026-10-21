@@ -149,7 +149,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <Link
-                  href="/dashboard/customer"
+                  href="/customer"
                   className="text-[#FFB7B2] hover:underline font-semibold"
                 >
                   Customer Dashboard →
@@ -195,7 +195,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <Link
-                  href="/dashboard/driver"
+                  href="/driver"
                   className="text-[#FFB7B2] hover:underline font-semibold"
                 >
                   Driver Dashboard →

@@ -23,11 +23,11 @@ export const Hero: React.FC = () => {
       {/* Ambient Floating Blobs (#FFE4E1 and #E6E6FA at 60% opacity) */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-12 -left-20 w-80 h-80 sm:w-[480px] sm:h-[480px] rounded-full bg-[#FFE4E1]/60 blur-[110px] animate-float-slow -z-10"
+        className="pointer-events-none absolute -top-12 -left-20 w-80 h-80 sm:w-120 sm:h-120 rounded-full bg-[#FFE4E1]/60 blur-[110px] animate-float-slow -z-10"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute top-1/4 -right-20 w-88 h-88 sm:w-[520px] sm:h-[520px] rounded-full bg-[#E6E6FA]/60 blur-[120px] animate-float-slow-reverse -z-10"
+        className="pointer-events-none absolute top-1/4 -right-20 w-88 h-88 sm:w-130 sm:h-130 rounded-full bg-[#E6E6FA]/60 blur-[120px] animate-float-slow-reverse -z-10"
       />
       <div
         aria-hidden="true"
@@ -170,7 +170,7 @@ export const Hero: React.FC = () => {
               </div>
             </div>
             <Link
-              href="/dashboard/customer"
+              href="/customer"
               className="text-xs font-semibold px-4 py-2.5 rounded-full bg-[#292524] hover:bg-stone-800 text-white transition-all shadow-xs"
             >
               Test Ride Now →
@@ -182,7 +182,8 @@ export const Hero: React.FC = () => {
         <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 w-full max-w-3xl pt-8 border-t border-stone-200/60">
           <div className="flex flex-col items-center text-center p-2">
             <span className="text-2xl sm:text-3xl font-bold text-[#292524]">
-              2.4 <span className="text-sm font-normal text-[#78716C]">min</span>
+              2.4{" "}
+              <span className="text-sm font-normal text-[#78716C]">min</span>
             </span>
             <span className="text-xs font-medium text-[#78716C] mt-1">
               ⚡ Avg Pickup Time
@@ -191,7 +192,8 @@ export const Hero: React.FC = () => {
 
           <div className="flex flex-col items-center text-center p-2">
             <span className="text-2xl sm:text-3xl font-bold text-[#292524]">
-              4.9 <span className="text-sm font-normal text-[#78716C]">/ 5</span>
+              4.9{" "}
+              <span className="text-sm font-normal text-[#78716C]">/ 5</span>
             </span>
             <span className="text-xs font-medium text-[#78716C] mt-1">
               ⭐ Rider Satisfaction
@@ -222,4 +224,3 @@ export const Hero: React.FC = () => {
 };
 
 export default Hero;
-

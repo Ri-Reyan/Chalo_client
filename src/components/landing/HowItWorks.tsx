@@ -324,14 +324,14 @@ export const HowItWorks: React.FC = () => {
           <div className="flex items-center gap-3 w-full sm:w-auto">
             {role === "rider" ? (
               <Link
-                href="/dashboard/customer"
+                href="/customer"
                 className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#292524] hover:bg-stone-800 text-white font-semibold text-xs sm:text-sm text-center shadow-xs transition-all hover:scale-105"
               >
                 Launch Rider Demo →
               </Link>
             ) : (
               <Link
-                href="/dashboard/driver"
+                href="/driver"
                 className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#292524] hover:bg-stone-800 text-white font-semibold text-xs sm:text-sm text-center shadow-xs transition-all hover:scale-105"
               >
                 Launch Driver Demo →

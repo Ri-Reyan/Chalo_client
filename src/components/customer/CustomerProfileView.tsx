@@ -14,7 +14,7 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
   const [name, setName] = useState(customerName || "Sarah Khan");
   const [isSaved, setIsSaved] = useState(false);
 
-  const [savedPlaces, setSavedPlaces] = useState([
+  const [savedPlaces] = useState([
     { title: "Home", address: "House 14, Road 7, Dhanmondi", icon: "🏠" },
     {
       title: "Office",
@@ -37,27 +37,27 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Header */}
-      <div className="bg-[#9a2121] border border-[#c8833b]/60 rounded-3xl p-6 sm:p-8 shadow-xl">
+      <div className="bg-white border border-stone-200/80 rounded-3xl p-6 sm:p-8 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-3xl bg-[#d4b454] text-[#2a2a2a] flex items-center justify-center text-2xl font-black shadow-lg">
+            <div className="w-16 h-16 rounded-3xl bg-[#FFB7B2] text-[#292524] flex items-center justify-center text-2xl font-black shadow-xs">
               {name ? name.charAt(0).toUpperCase() : "C"}
             </div>
             <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-[#6f1b1b] border border-[#c8833b]/50 text-[#d4b454] text-[10px] font-extrabold uppercase tracking-wider mb-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-[#E8EFE8] border border-emerald-200 text-emerald-800 text-[10px] font-extrabold uppercase tracking-wider mb-1">
                 <span>Verified Customer</span>
               </div>
-              <h1 className="text-2xl font-extrabold text-white">{name}</h1>
-              <p className="text-xs text-stone-200">{customerEmail}</p>
+              <h1 className="text-2xl font-extrabold text-[#292524]">{name}</h1>
+              <p className="text-xs text-stone-500">{customerEmail}</p>
             </div>
           </div>
 
-          <div className="bg-[#6f1b1b] border border-[#c8833b]/50 rounded-2xl px-5 py-3 text-center sm:text-right shrink-0">
-            <span className="text-[11px] text-stone-300 block">
+          <div className="bg-stone-50 border border-stone-200/80 rounded-2xl px-5 py-3 text-center sm:text-right shrink-0">
+            <span className="text-[11px] text-stone-500 block">
               Customer Balance
             </span>
-            <div className="text-2xl font-black text-[#d4b454]">৳0.00</div>
-            <span className="text-[10px] text-stone-300">
+            <div className="text-2xl font-black text-[#292524]">৳0.00</div>
+            <span className="text-[10px] text-emerald-700 font-semibold">
               Cashless Auto-Billing Active
             </span>
           </div>
@@ -66,44 +66,44 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Account Details (7 cols) */}
-        <div className="lg:col-span-7 bg-[#9a2121] border border-[#c8833b]/60 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5">
-          <h2 className="text-base font-bold text-white uppercase tracking-wider text-[#d4b454]">
+        <div className="lg:col-span-7 bg-white border border-stone-200/80 rounded-3xl p-6 sm:p-7 shadow-sm space-y-5">
+          <h2 className="text-base font-bold text-[#292524] uppercase tracking-wider">
             Account Information
           </h2>
 
           <form onSubmit={handleSaveProfile} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-stone-200 mb-1">
+              <label className="block text-xs font-bold text-stone-700 mb-1">
                 Full Name
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full h-11 px-3.5 bg-[#f5f5f5] text-[#2a2a2a] rounded-xl border border-[#c8833b] text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#d4b454]"
+                className="w-full h-11 px-3.5 bg-stone-50 text-[#292524] rounded-xl border border-stone-200 text-sm font-semibold focus:outline-none focus:bg-white focus:border-[#FFB7B2] focus:ring-2 focus:ring-[#FFB7B2]/30 transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-stone-200 mb-1">
+              <label className="block text-xs font-bold text-stone-700 mb-1">
                 Email Address (Prisma Unique Identifier)
               </label>
               <input
                 type="email"
                 disabled
                 value={customerEmail}
-                className="w-full h-11 px-3.5 bg-stone-200 text-stone-600 rounded-xl border border-stone-400 text-sm font-medium cursor-not-allowed"
+                className="w-full h-11 px-3.5 bg-stone-100 text-stone-500 rounded-xl border border-stone-200 text-sm font-medium cursor-not-allowed"
               />
-              <span className="text-[11px] text-stone-300 mt-1 block">
-                Email address is linked to your authenticated JWT session.
+              <span className="text-[11px] text-stone-400 mt-1 block">
+                Email address is linked to your authenticated session.
               </span>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-stone-200 mb-1">
+              <label className="block text-xs font-bold text-stone-700 mb-1">
                 Assigned Platform Role
               </label>
-              <div className="h-11 px-3.5 bg-[#6f1b1b] rounded-xl border border-[#c8833b]/40 flex items-center text-sm font-bold text-[#d4b454]">
+              <div className="h-11 px-3.5 bg-stone-50 rounded-xl border border-stone-200 flex items-center text-sm font-bold text-[#292524]">
                 CUSTOMER
               </div>
             </div>
@@ -111,12 +111,12 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
             <div className="pt-2 flex items-center gap-3">
               <button
                 type="submit"
-                className="py-3 px-6 rounded-xl bg-[#d4b454] hover:bg-[#b45f06] text-[#2a2a2a] hover:text-white font-bold text-xs uppercase tracking-wide transition-all shadow-md"
+                className="py-3 px-6 rounded-xl bg-[#FFB7B2] hover:bg-[#FF9E98] text-[#292524] font-bold text-xs uppercase tracking-wide transition-all shadow-xs"
               >
                 Save Profile Changes
               </button>
               {isSaved && (
-                <span className="text-xs text-emerald-400 font-bold flex items-center gap-1 animate-in fade-in">
+                <span className="text-xs text-emerald-700 font-bold flex items-center gap-1 animate-in fade-in">
                   <span>✓</span> Changes saved!
                 </span>
               )}
@@ -127,25 +127,25 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
         {/* Right Column: Saved Places & Security Preferences (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
           {/* Saved Places */}
-          <div className="bg-[#9a2121] border border-[#c8833b]/60 rounded-3xl p-6 shadow-xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[#c8833b]/30">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-[#d4b454]">
+          <div className="bg-white border border-stone-200/80 rounded-3xl p-6 shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-stone-200">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-[#292524]">
                 Saved Favorites
               </h3>
-              <span className="text-xs text-stone-300">Quick Destination</span>
+              <span className="text-xs text-stone-500 font-medium">Quick Destination</span>
             </div>
 
             <div className="space-y-3">
               {savedPlaces.map((place, idx) => (
                 <div
                   key={idx}
-                  className="bg-[#6f1b1b] border border-[#c8833b]/40 rounded-2xl p-3 flex items-center justify-between text-xs"
+                  className="bg-stone-50 border border-stone-200/80 rounded-2xl p-3 flex items-center justify-between text-xs"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-xl">{place.icon}</span>
                     <div>
-                      <div className="font-bold text-white">{place.title}</div>
-                      <div className="text-[11px] text-stone-300">
+                      <div className="font-bold text-[#292524]">{place.title}</div>
+                      <div className="text-[11px] text-stone-500">
                         {place.address}
                       </div>
                     </div>
@@ -156,18 +156,18 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
           </div>
 
           {/* Safety & SOS Settings */}
-          <div className="bg-[#9a2121] border border-[#c8833b]/60 rounded-3xl p-6 shadow-xl space-y-3">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-[#d4b454]">
-              Safety & Verification
+          <div className="bg-white border border-stone-200/80 rounded-3xl p-6 shadow-sm space-y-3">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[#292524]">
+              Safety &amp; Verification
             </h3>
-            <div className="bg-[#6f1b1b] border border-[#c8833b]/40 rounded-2xl p-3 text-xs space-y-2">
+            <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-3 text-xs space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-stone-300">Mandatory 4-Digit OTP</span>
-                <span className="text-emerald-400 font-bold">✓ Enabled</span>
+                <span className="text-stone-600 font-medium">Mandatory 4-Digit OTP</span>
+                <span className="text-emerald-700 font-bold">✓ Enabled</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-300">Emergency SOS Hotline</span>
-                <span className="text-emerald-400 font-bold">
+                <span className="text-stone-600 font-medium">Emergency SOS Hotline</span>
+                <span className="text-emerald-700 font-bold">
                   ✓ 24/7 Monitored
                 </span>
               </div>

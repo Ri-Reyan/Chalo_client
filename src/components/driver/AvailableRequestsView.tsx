@@ -97,20 +97,20 @@ export const AvailableRequestsView: React.FC<AvailableRequestsViewProps> = ({
 
   if (!isOnline) {
     return (
-      <div className="bg-[#9a2121] border border-[#c8833b]/60 rounded-3xl p-10 text-center shadow-xl space-y-5 animate-in fade-in">
-        <div className="w-20 h-20 rounded-full bg-[#6f1b1b] border border-[#c8833b]/50 text-4xl flex items-center justify-center mx-auto shadow-inner">
+      <div className="bg-white border border-stone-200/80 rounded-3xl p-10 text-center shadow-sm space-y-5 animate-in fade-in">
+        <div className="w-20 h-20 rounded-full bg-stone-100 border border-stone-200 text-4xl flex items-center justify-center mx-auto shadow-inner">
           ⏸️
         </div>
-        <h2 className="text-2xl sm:text-3xl font-bold text-white">
+        <h2 className="text-2xl sm:text-3xl font-bold text-[#292524]">
           You are currently Offline
         </h2>
-        <p className="text-sm text-stone-200 max-w-md mx-auto">
+        <p className="text-sm text-stone-500 max-w-md mx-auto">
           Go online to start receiving nearby ride offers within your 2km radius. You maintain total control over your schedule.
         </p>
         <button
           type="button"
           onClick={onGoOnline}
-          className="h-14 px-8 rounded-2xl bg-[#d4b454] hover:bg-[#b45f06] text-[#2a2a2a] hover:text-white font-extrabold text-base tracking-wide transition-all shadow-xl hover:scale-105 active:scale-95"
+          className="h-14 px-8 rounded-2xl bg-[#FFB7B2] hover:bg-[#FF9E98] text-[#292524] font-extrabold text-base tracking-wide transition-all shadow-sm hover:scale-105 active:scale-95"
         >
           Go Online Now 🟢
         </button>
@@ -121,32 +121,32 @@ export const AvailableRequestsView: React.FC<AvailableRequestsViewProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Header */}
-      <div className="bg-[#9a2121] border border-[#c8833b]/60 rounded-3xl p-6 sm:p-7 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-white border border-stone-200/80 rounded-3xl p-6 sm:p-7 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#6f1b1b] border border-emerald-500/40 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E8EFE8] border border-emerald-200 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
             <span>Active &amp; Ready for Rides</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#292524]">
             Available Requests
           </h1>
-          <p className="mt-1 text-xs sm:text-sm text-stone-200">
+          <p className="mt-1 text-xs sm:text-sm text-stone-500">
             Incoming dispatch offers within your 2km radius with full upfront destination disclosure.
           </p>
         </div>
 
-        <div className="bg-[#6f1b1b] border border-[#c8833b]/50 rounded-2xl px-5 py-3 text-center sm:text-right shrink-0">
-          <span className="text-[11px] text-stone-300 block">Radius Dispatch</span>
-          <div className="text-xl font-bold text-[#d4b454]">&le; 2.0 KM</div>
-          <span className="text-[10px] text-emerald-400 font-semibold">Strict Geo-Matching</span>
+        <div className="bg-stone-50 border border-stone-200/80 rounded-2xl px-5 py-3 text-center sm:text-right shrink-0">
+          <span className="text-[11px] text-stone-500 block">Radius Dispatch</span>
+          <div className="text-xl font-bold text-[#292524]">&le; 2.0 KM</div>
+          <span className="text-[10px] text-emerald-700 font-semibold">Strict Geo-Matching</span>
         </div>
       </div>
 
       {/* Active Request Notification Card */}
       {activeOffer ? (
-        <div className="bg-[#9a2121] border-2 border-[#d4b454] rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative overflow-hidden">
+        <div className="bg-white border-2 border-[#FFB7B2] rounded-3xl p-6 sm:p-8 shadow-xl space-y-6 relative overflow-hidden">
           {/* Top 30-Second Countdown Progress Bar */}
-          <div className="absolute top-0 left-0 right-0 h-2 bg-[#6f1b1b]">
+          <div className="absolute top-0 left-0 right-0 h-2 bg-stone-100">
             <div
               className="h-full bg-rose-500 transition-all duration-1000 ease-linear"
               style={{ width: `${(countdown / 30) * 100}%` }}
@@ -156,96 +156,96 @@ export const AvailableRequestsView: React.FC<AvailableRequestsViewProps> = ({
           {/* Header Row */}
           <div className="flex items-center justify-between pt-1">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-[#6f1b1b] border border-[#c8833b] flex items-center justify-center text-xl">
+              <div className="w-11 h-11 rounded-2xl bg-stone-100 border border-stone-200 flex items-center justify-center text-xl shadow-2xs">
                 👤
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">
+                <h3 className="text-base font-bold text-[#292524]">
                   {activeOffer.customerName}
                 </h3>
-                <div className="text-xs text-[#d4b454] font-semibold">
-                  ★ {activeOffer.customerRating} &bull; Verified Passenger
+                <div className="text-xs text-stone-600 font-semibold">
+                  <span className="text-amber-500">★</span> {activeOffer.customerRating} &bull; Verified Passenger
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 bg-[#6f1b1b] border border-rose-500/50 rounded-xl px-3 py-1.5 text-xs font-black text-rose-400">
+            <div className="flex items-center gap-2 bg-rose-50 border border-rose-200 rounded-xl px-3 py-1.5 text-xs font-black text-rose-700">
               <span>⏱️</span>
               <span>{countdown}s remaining</span>
             </div>
           </div>
 
           {/* Route Details */}
-          <div className="bg-[#6f1b1b] border border-[#c8833b]/40 rounded-2xl p-4 sm:p-5 space-y-3">
+          <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 sm:p-5 space-y-3">
             <div className="flex items-start gap-3">
               <span className="text-base mt-0.5">🟢</span>
               <div>
-                <div className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">
+                <div className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">
                   Pickup Location ({activeOffer.pickupDistanceKm} km away)
                 </div>
-                <div className="text-sm font-semibold text-white">
+                <div className="text-sm font-semibold text-[#292524]">
                   {activeOffer.pickup}
                 </div>
               </div>
             </div>
 
-            <div className="w-0.5 h-4 bg-stone-500 ml-5" />
-
-            <div className="flex items-start gap-3">
+            <div className="border-t border-stone-200/80 pt-3 flex items-start gap-3">
               <span className="text-base mt-0.5">📍</span>
               <div>
-                <div className="text-[11px] font-bold text-rose-400 uppercase tracking-wider">
-                  Destination ({activeOffer.distanceKm} km total trip)
+                <div className="text-[11px] font-bold text-rose-700 uppercase tracking-wider">
+                  Destination Drop-off ({activeOffer.distanceKm} km trip)
                 </div>
-                <div className="text-sm font-semibold text-white">
+                <div className="text-sm font-semibold text-[#292524]">
                   {activeOffer.destination}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Earnings Breakdown */}
+          {/* Upfront Fare Breakdown */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-            <div className="bg-[#6f1b1b] border border-[#c8833b]/40 rounded-xl p-3">
-              <span className="text-[10px] text-stone-300 block uppercase">Gross Customer Fare</span>
-              <span className="text-base font-bold text-white">৳{activeOffer.grossFare}.00</span>
+            <div className="bg-stone-50 border border-stone-200/80 rounded-xl p-3">
+              <span className="text-[11px] text-stone-500 block">Gross Fare</span>
+              <span className="text-base font-bold text-[#292524]">৳{activeOffer.grossFare}.00</span>
             </div>
-            <div className="bg-[#6f1b1b] border border-[#c8833b]/40 rounded-xl p-3">
-              <span className="text-[10px] text-stone-300 block uppercase">Flat 10% Chalo Cut</span>
-              <span className="text-base font-bold text-rose-400">- ৳{Math.round(activeOffer.grossFare * 0.1)}.00</span>
+            <div className="bg-stone-50 border border-stone-200/80 rounded-xl p-3">
+              <span className="text-[11px] text-stone-500 block">Platform Fee (Flat 10%)</span>
+              <span className="text-base font-bold text-stone-600">-৳{(activeOffer.grossFare * 0.1).toFixed(0)}.00</span>
             </div>
-            <div className="bg-[#6f1b1b] border border-[#d4b454] rounded-xl p-3 shadow-inner">
-              <span className="text-[10px] text-[#d4b454] font-bold block uppercase">Your Net Take-Home</span>
-              <span className="text-2xl font-black text-[#d4b454]">+ ৳{activeOffer.netEarnings}.00</span>
+            <div className="bg-[#E8EFE8] border border-emerald-300 rounded-xl p-3 shadow-2xs">
+              <span className="text-[11px] text-emerald-800 font-bold block uppercase">Your Net Take-Home (90%)</span>
+              <span className="text-xl font-black text-emerald-800">+ ৳{activeOffer.netEarnings}.00</span>
             </div>
           </div>
 
-          {/* Accept / Decline Action Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          {/* Action Decision Buttons */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <button
               type="button"
               onClick={handleDecline}
-              className="h-14 rounded-2xl bg-[#6f1b1b] hover:bg-[#7e1f1f] text-stone-200 border border-[#c8833b]/50 font-bold text-sm tracking-wide transition-all shadow-md"
+              className="h-14 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 font-bold text-sm tracking-wide transition-all"
             >
-              Decline Offer
+              Pass Offer
             </button>
             <button
               type="button"
               onClick={handleAccept}
-              className="h-14 rounded-2xl bg-[#d4b454] hover:bg-[#b45f06] text-[#2a2a2a] hover:text-white font-black text-base tracking-wide transition-all shadow-xl hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2"
+              className="h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-base tracking-wide transition-all shadow-md hover:scale-[1.01]"
             >
-              <span>Accept Ride (+৳{activeOffer.netEarnings}) →</span>
+              Accept Trip (Earn ৳{activeOffer.netEarnings}) →
             </button>
           </div>
         </div>
       ) : (
-        <div className="bg-[#9a2121] border border-[#c8833b]/60 rounded-3xl p-10 text-center shadow-xl space-y-3">
-          <div className="w-12 h-12 rounded-full bg-[#6f1b1b] flex items-center justify-center mx-auto text-xl">
+        <div className="bg-white border-2 border-dashed border-stone-300 rounded-3xl p-10 text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-stone-100 flex items-center justify-center mx-auto text-xl">
             📡
           </div>
-          <h3 className="text-lg font-bold text-white">Searching for requests...</h3>
-          <p className="text-xs text-stone-300">
-            You will be alerted instantly when a rider requests a ride within 2km.
+          <h3 className="text-lg font-bold text-[#292524]">
+            Scanning for nearby ride requests...
+          </h3>
+          <p className="text-xs text-stone-500 max-w-sm mx-auto">
+            You will hear a ping and receive a 30-second decision offer as soon as a customer books in your area.
           </p>
         </div>
       )}
@@ -254,4 +254,3 @@ export const AvailableRequestsView: React.FC<AvailableRequestsViewProps> = ({
 };
 
 export default AvailableRequestsView;
-

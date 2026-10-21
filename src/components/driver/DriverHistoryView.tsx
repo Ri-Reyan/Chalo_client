@@ -59,22 +59,22 @@ export const DriverHistoryView: React.FC<DriverHistoryViewProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Header */}
-      <div className="bg-[#9a2121] border border-[#c8833b]/60 rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white border border-stone-200/80 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-bold text-[#d4b454] uppercase tracking-wider block mb-1">
+          <span className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-1">
             Performance &amp; Trips
           </span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#292524]">
             Driver Trip History
           </h1>
-          <p className="mt-1 text-xs sm:text-sm text-stone-200">
+          <p className="mt-1 text-xs sm:text-sm text-stone-500">
             Every completed ride with transparent 90% take-home calculations.
           </p>
         </div>
 
-        <div className="bg-[#6f1b1b] border border-[#c8833b]/50 rounded-2xl px-5 py-3 text-center sm:text-right shrink-0">
-          <span className="text-[11px] text-stone-300 block">Total Historical Earnings</span>
-          <div className="text-3xl font-black text-[#d4b454]">
+        <div className="bg-[#E8EFE8] border border-emerald-200 rounded-2xl px-5 py-3 text-center sm:text-right shrink-0">
+          <span className="text-[11px] text-emerald-800 font-bold block uppercase">Total Historical Earnings</span>
+          <div className="text-3xl font-black text-emerald-800">
             ৳{totalEarnings}.00
           </div>
         </div>
@@ -82,17 +82,19 @@ export const DriverHistoryView: React.FC<DriverHistoryViewProps> = ({
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[#9a2121] border border-[#c8833b]/50 rounded-2xl p-5 shadow-sm text-center">
-          <span className="text-xs text-stone-300 uppercase tracking-wider block">Completed Rides</span>
-          <div className="text-2xl font-black text-white mt-1">{allTrips.length} Rides</div>
+        <div className="bg-white border border-stone-200/80 rounded-2xl p-5 shadow-xs text-center">
+          <span className="text-xs text-stone-500 uppercase tracking-wider block">Completed Rides</span>
+          <div className="text-2xl font-black text-[#292524] mt-1">{allTrips.length} Rides</div>
         </div>
-        <div className="bg-[#9a2121] border border-[#c8833b]/50 rounded-2xl p-5 shadow-sm text-center">
-          <span className="text-xs text-stone-300 uppercase tracking-wider block">Total Distance Covered</span>
-          <div className="text-2xl font-black text-white mt-1">{totalDistance.toFixed(1)} km</div>
+        <div className="bg-white border border-stone-200/80 rounded-2xl p-5 shadow-xs text-center">
+          <span className="text-xs text-stone-500 uppercase tracking-wider block">Total Distance Covered</span>
+          <div className="text-2xl font-black text-[#292524] mt-1">{totalDistance.toFixed(1)} km</div>
         </div>
-        <div className="bg-[#9a2121] border border-[#c8833b]/50 rounded-2xl p-5 shadow-sm text-center">
-          <span className="text-xs text-stone-300 uppercase tracking-wider block">Average Passenger Rating</span>
-          <div className="text-2xl font-black text-[#d4b454] mt-1">4.96 ★</div>
+        <div className="bg-white border border-stone-200/80 rounded-2xl p-5 shadow-xs text-center">
+          <span className="text-xs text-stone-500 uppercase tracking-wider block">Average Passenger Rating</span>
+          <div className="text-2xl font-black text-[#292524] mt-1 flex items-center justify-center gap-1">
+            <span className="text-amber-500">★</span> 4.96
+          </div>
         </div>
       </div>
 
@@ -101,26 +103,28 @@ export const DriverHistoryView: React.FC<DriverHistoryViewProps> = ({
         {allTrips.map((trip, idx) => (
           <div
             key={trip.id + idx}
-            className="bg-[#9a2121] border border-[#c8833b]/50 rounded-2xl p-5 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4"
+            className="bg-white border border-stone-200/80 rounded-2xl p-5 shadow-xs hover:border-stone-300 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
           >
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-[#6f1b1b] flex items-center justify-center text-xs">
+                <span className="w-8 h-8 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center text-sm">
                   {trip.vehicleType === "BIKE" ? "🏍️" : "🚗"}
                 </span>
-                <span className="font-bold text-white text-sm">
+                <span className="font-bold text-[#292524] text-sm">
                   Passenger: {trip.customerName}
                 </span>
-                <span className="text-xs text-[#d4b454]">★ {trip.customerRating}</span>
+                <span className="text-xs text-stone-600 font-semibold flex items-center gap-0.5">
+                  <span className="text-amber-500">★</span> {trip.customerRating}
+                </span>
               </div>
 
-              <div className="text-xs text-stone-200 pl-8">
-                <span className="text-emerald-400 font-semibold">{trip.pickup}</span>
-                <span className="mx-2 text-[#d4b454]">&rarr;</span>
-                <span className="text-rose-400 font-semibold">{trip.destination}</span>
+              <div className="text-xs text-stone-600 pl-10">
+                <span className="text-emerald-700 font-semibold">{trip.pickup}</span>
+                <span className="mx-2 text-stone-400">&rarr;</span>
+                <span className="text-rose-700 font-semibold">{trip.destination}</span>
               </div>
 
-              <div className="text-[11px] text-stone-400 pl-8 flex gap-3">
+              <div className="text-[11px] text-stone-400 pl-10 flex gap-3">
                 <span>Trip: {trip.distanceKm} km</span>
                 <span>&bull;</span>
                 <span>Gross Fare: ৳{trip.grossFare}.00</span>
@@ -129,14 +133,14 @@ export const DriverHistoryView: React.FC<DriverHistoryViewProps> = ({
               </div>
             </div>
 
-            <div className="text-left md:text-right border-t md:border-t-0 border-[#c8833b]/30 pt-2 md:pt-0 shrink-0">
-              <span className="text-[10px] text-emerald-400 font-bold uppercase block">
+            <div className="text-left md:text-right border-t md:border-t-0 border-stone-200 pt-2 md:pt-0 shrink-0">
+              <span className="text-[10px] text-emerald-700 font-bold uppercase block">
                 Net Deposited
               </span>
-              <div className="text-2xl font-black text-[#d4b454]">
+              <div className="text-2xl font-black text-emerald-700">
                 + ৳{trip.netEarnings}.00
               </div>
-              <span className="text-[10px] text-stone-300">
+              <span className="text-[10px] text-stone-400">
                 Payment Captured ✓
               </span>
             </div>
@@ -148,4 +152,3 @@ export const DriverHistoryView: React.FC<DriverHistoryViewProps> = ({
 };
 
 export default DriverHistoryView;
-

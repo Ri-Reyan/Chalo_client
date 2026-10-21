@@ -51,7 +51,7 @@ export default function CustomerDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#6f1b1b] text-white flex flex-col lg:flex-row font-sans">
+    <div className="min-h-screen bg-[#FDFCF8] text-[#292524] flex flex-col lg:flex-row font-sans bg-grain">
       {/* Sidebar Navigation */}
       <CustomerSidebar
         activeTab={activeTab}
