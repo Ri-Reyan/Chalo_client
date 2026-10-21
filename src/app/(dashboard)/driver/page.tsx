@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import DriverSidebar, { DriverTab } from "@/components/driver/DriverSidebar";
-import AvailableRequestsView, { DriverRideOffer } from "@/components/driver/AvailableRequestsView";
+import AvailableRequestsView, {
+  DriverRideOffer,
+} from "@/components/driver/AvailableRequestsView";
 import DriverOngoingRideView from "@/components/driver/DriverOngoingRideView";
 import DriverWalletView from "@/components/driver/DriverWalletView";
 import DriverHistoryView from "@/components/driver/DriverHistoryView";
@@ -41,7 +43,10 @@ export default function DriverDashboardPage() {
     setActiveTab("ongoing");
   };
 
-  const handleRideCompleted = (netEarnings: number, completedOffer: DriverRideOffer) => {
+  const handleRideCompleted = (
+    netEarnings: number,
+    completedOffer: DriverRideOffer,
+  ) => {
     setBalance((prev) => prev + netEarnings);
     setCompletedRides((prev) => [completedOffer, ...prev]);
     setActiveRide(null);
@@ -117,4 +122,3 @@ export default function DriverDashboardPage() {
     </div>
   );
 }
-

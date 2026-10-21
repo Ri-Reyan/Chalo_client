@@ -84,7 +84,7 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Balance Banner */}
-      <div className="bg-gradient-to-br from-[#292524] to-stone-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative overflow-hidden">
+      <div className="bg-linear-to-br from-[#292524] to-stone-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative overflow-hidden">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[#FFB7B2] text-xs font-bold uppercase tracking-wider mb-2">
             <span>💳</span>
@@ -167,8 +167,8 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
                 </div>
                 <div className="text-stone-500">
                   Transaction ID:{" "}
-                  <span className="font-mono text-[#292524]">{w.id}</span> &bull;{" "}
-                  {w.createdAt}
+                  <span className="font-mono text-[#292524]">{w.id}</span>{" "}
+                  &bull; {w.createdAt}
                 </div>
               </div>
 
@@ -190,7 +190,9 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
         <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white border border-stone-200 rounded-3xl p-7 max-w-md w-full shadow-2xl space-y-4 animate-in zoom-in-95">
             <div className="flex items-center justify-between pb-3 border-b border-stone-200">
-              <h3 className="text-lg font-bold text-[#292524]">Request Payout</h3>
+              <h3 className="text-lg font-bold text-[#292524]">
+                Request Payout
+              </h3>
               <button
                 type="button"
                 onClick={() => setShowModal(false)}

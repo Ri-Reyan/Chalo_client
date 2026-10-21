@@ -50,7 +50,7 @@ export interface Ride {
   fare: number;
   netDriverEarnings: number;
   status: RideStatus;
-  otp: string;
+  otp?: string;
   currentRadiusKm: number;
   createdAt: string;
   acceptedAt?: string | null;

@@ -14,20 +14,6 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
   const [name, setName] = useState(customerName || "Sarah Khan");
   const [isSaved, setIsSaved] = useState(false);
 
-  const [savedPlaces] = useState([
-    { title: "Home", address: "House 14, Road 7, Dhanmondi", icon: "🏠" },
-    {
-      title: "Office",
-      address: "Tower 52, Gulshan Avenue, Gulshan 2",
-      icon: "🏢",
-    },
-    {
-      title: "University / Study",
-      address: "Brac University Campus, Merul Badda",
-      icon: "🎓",
-    },
-  ]);
-
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaved(true);
@@ -124,52 +110,50 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
           </form>
         </div>
 
-        {/* Right Column: Saved Places & Security Preferences (5 cols) */}
+        {/* Right Column: Platform Compliance & Safety (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
-          {/* Saved Places */}
-          <div className="bg-white border border-stone-200/80 rounded-3xl p-6 shadow-sm space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-stone-200">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-[#292524]">
-                Saved Favorites
-              </h3>
-              <span className="text-xs text-stone-500 font-medium">Quick Destination</span>
-            </div>
-
-            <div className="space-y-3">
-              {savedPlaces.map((place, idx) => (
-                <div
-                  key={idx}
-                  className="bg-stone-50 border border-stone-200/80 rounded-2xl p-3 flex items-center justify-between text-xs"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">{place.icon}</span>
-                    <div>
-                      <div className="font-bold text-[#292524]">{place.title}</div>
-                      <div className="text-[11px] text-stone-500">
-                        {place.address}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+          {/* Safety & Protection Settings */}
+          <div className="bg-white border border-stone-200/80 rounded-3xl p-6 shadow-sm space-y-3">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[#292524]">
+              Safety &amp; Protection
+            </h3>
+            <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 text-xs space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-stone-600 font-medium">Emergency SOS Hotline</span>
+                <span className="text-emerald-700 font-bold">✓ 24/7 Monitored</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-stone-600 font-medium">Live GPS Route Tracking</span>
+                <span className="text-emerald-700 font-bold">✓ Active</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-stone-600 font-medium">Verified Drivers (NID &amp; License)</span>
+                <span className="text-emerald-700 font-bold">✓ Enforced</span>
+              </div>
+              <div className="flex items-center justify-between border-t border-stone-200 pt-2">
+                <span className="text-stone-600 font-medium">Guaranteed Zero Surge Pricing</span>
+                <span className="text-emerald-700 font-bold">✓ 100% Locked</span>
+              </div>
             </div>
           </div>
 
-          {/* Safety & SOS Settings */}
+          {/* Ride & Billing Preferences */}
           <div className="bg-white border border-stone-200/80 rounded-3xl p-6 shadow-sm space-y-3">
             <h3 className="text-sm font-bold uppercase tracking-wider text-[#292524]">
-              Safety &amp; Verification
+              Trip &amp; Billing Preferences
             </h3>
-            <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-3 text-xs space-y-2">
+            <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 text-xs space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-stone-600 font-medium">Mandatory 4-Digit OTP</span>
-                <span className="text-emerald-700 font-bold">✓ Enabled</span>
+                <span className="text-stone-600 font-medium">Default Payment</span>
+                <span className="text-[#292524] font-semibold">Cashless / Auto-Captured</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-600 font-medium">Emergency SOS Hotline</span>
-                <span className="text-emerald-700 font-bold">
-                  ✓ 24/7 Monitored
-                </span>
+                <span className="text-stone-600 font-medium">Digital Ride Invoices</span>
+                <span className="text-[#292524] font-semibold">Instant Download</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-stone-600 font-medium">Cancellation Window</span>
+                <span className="text-emerald-700 font-semibold">Free within 3 mins</span>
               </div>
             </div>
           </div>

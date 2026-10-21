@@ -14,11 +14,8 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
   onRideCompleted,
   onRideCancelled,
 }) => {
-  // 1: En Route to Pickup -> 2: Arrived / Enter OTP -> 3: In Transit -> 4: Completed
+  // 1: En Route to Pickup -> 2: Arrived / Passenger Boarding -> 3: In Transit -> 4: Completed
   const [tripStep, setTripStep] = useState<1 | 2 | 3 | 4>(1);
-  const [enteredOtp, setEnteredOtp] = useState("");
-  const [otpError, setOtpError] = useState("");
-  const [isCallingCustomer, setIsCallingCustomer] = useState(false);
 
   if (!ride) {
     return (
@@ -41,13 +38,7 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
     setTripStep(2);
   };
 
-  const handleVerifyOtpAndStart = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (enteredOtp.length !== 4) {
-      setOtpError("Please enter the 4-digit OTP provided by the passenger.");
-      return;
-    }
-    setOtpError("");
+  const handleStartTrip = () => {
     setTripStep(3);
   };
 
@@ -67,14 +58,13 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
           <div>
             <div className="text-xs font-bold text-stone-700 uppercase tracking-wider">
               {tripStep === 1 && "Step 1 of 3: En Route to Pickup"}
-              {tripStep === 2 &&
-                "Step 2 of 3: Waiting for Customer • OTP Verification"}
+              {tripStep === 2 && "Step 2 of 3: At Pickup Location"}
               {tripStep === 3 && "Step 3 of 3: In Transit to Destination"}
               {tripStep === 4 && "Trip Completed Successfully"}
             </div>
             <h1 className="text-xl sm:text-2xl font-extrabold text-[#292524] mt-0.5">
               {tripStep === 1 && "Driving to passenger pickup point"}
-              {tripStep === 2 && "Verify passenger OTP code"}
+              {tripStep === 2 && "Passenger boarding • Ready to begin trip"}
               {tripStep === 3 &&
                 "Passenger on board • Navigating to destination"}
               {tripStep === 4 && "Earnings deposited to your wallet!"}
@@ -193,21 +183,7 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsCallingCustomer(true);
-                  setTimeout(() => setIsCallingCustomer(false), 2000);
-                }}
-                className="py-2.5 px-3 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs flex items-center justify-center gap-2 border border-stone-200 transition-all"
-              >
-                <span>📞</span>
-                <span>
-                  {isCallingCustomer ? "Calling..." : "Call Customer"}
-                </span>
-              </button>
-
+            <div className="pt-1">
               <button
                 type="button"
                 onClick={() => {
@@ -215,9 +191,9 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
                     onRideCancelled();
                   }
                 }}
-                className="py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition-all"
+                className="w-full py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
               >
-                <span>✕ Cancel</span>
+                <span>✕ Cancel Ride</span>
               </button>
             </div>
 
@@ -234,49 +210,33 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
               </div>
             )}
 
-            {/* STEP 2 ACTION: Enter Customer OTP */}
+            {/* STEP 2 ACTION: Start Trip (No OTP required) */}
             {tripStep === 2 && (
-              <form
-                onSubmit={handleVerifyOtpAndStart}
-                className="pt-2 space-y-3"
-              >
-                <div className="bg-[#EFEDF4]/60 border border-purple-200 rounded-2xl p-4 text-center">
-                  <label className="block text-xs font-bold text-stone-700 mb-1.5">
-                    Ask passenger for their 4-digit OTP:
-                  </label>
-                  <input
-                    type="text"
-                    maxLength={4}
-                    value={enteredOtp}
-                    onChange={(e) => setEnteredOtp(e.target.value)}
-                    placeholder="e.g. 5821"
-                    className="w-40 h-12 text-center text-2xl font-black tracking-widest text-[#292524] bg-white rounded-xl border border-stone-300 focus:outline-none focus:border-[#FFB7B2] focus:ring-2 focus:ring-[#FFB7B2]/30 mx-auto block shadow-2xs"
-                  />
-                  <span className="text-[10px] text-stone-500 mt-1 block">
-                    (Demo: Enter 5821 or any 4 digits)
-                  </span>
+              <div className="pt-3 space-y-3">
+                <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 text-center">
+                  <div className="text-sm font-bold text-[#292524]">
+                    Passenger At Pickup Location
+                  </div>
+                  <p className="text-xs text-stone-500 mt-1">
+                    Confirm passenger has boarded and begin navigating to destination.
+                  </p>
                 </div>
 
-                {otpError && (
-                  <div className="text-xs text-rose-600 font-semibold text-center">
-                    {otpError}
-                  </div>
-                )}
-
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleStartTrip}
                   className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-base tracking-wide transition-all shadow-md hover:scale-[1.01]"
                 >
-                  Verify OTP &amp; Start Ride &rarr;
+                  Start Trip &amp; Begin Journey &rarr;
                 </button>
-              </form>
+              </div>
             )}
 
             {/* STEP 3 ACTION: Complete Ride */}
             {tripStep === 3 && (
               <div className="pt-3 space-y-2">
                 <div className="bg-[#E8EFE8] border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800 text-center font-semibold">
-                  ✓ Ride in progress &bull; Passenger OTP verified
+                  ✓ Ride in progress &bull; Navigating to destination
                 </div>
                 <button
                   type="button"

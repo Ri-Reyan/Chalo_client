@@ -17,7 +17,7 @@ export interface ActiveRideState {
     plateNumber: string;
     etaMinutes: number;
   };
-  otp: string;
+  otp?: string;
   createdAt: string;
 }
 

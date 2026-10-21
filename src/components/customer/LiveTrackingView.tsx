@@ -238,16 +238,6 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
               </span>
             </div>
 
-            {/* Security OTP PIN */}
-            <div className="bg-[#EFEDF4]/60 border border-purple-200 rounded-2xl p-4 text-center">
-              <span className="text-[11px] text-stone-600 font-medium block">
-                Share this security PIN when boarding:
-              </span>
-              <div className="text-2xl font-black tracking-widest text-[#292524] mt-1">
-                OTP: {ride.otp}
-              </div>
-            </div>
-
             {/* Action Buttons: Call Driver & Cancel */}
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button
