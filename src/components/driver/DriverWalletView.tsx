@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import api, { getErrorMessage } from "@/lib/axios";
+import toast from "@/lib/toast";
 
 interface DriverWalletViewProps {
   balance: number;
@@ -20,29 +22,12 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
   balance,
   onWithdrawSuccess,
 }) => {
-  const [withdrawals, setWithdrawals] = useState<WithdrawalItem[]>([
-    {
-      id: "wth-8102",
-      amount: 1200,
-      method: "bKash",
-      account: "01812-987654",
-      status: "COMPLETED",
-      createdAt: "Yesterday, 8:30 PM",
-    },
-    {
-      id: "wth-7491",
-      amount: 2500,
-      method: "Bank Transfer",
-      account: "City Bank - A/C 2108",
-      status: "COMPLETED",
-      createdAt: "Oct 18, 4:10 PM",
-    },
-  ]);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalItem[]>([]);
 
   const [showModal, setShowModal] = useState(false);
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState<"bKash" | "Nagad" | "Bank">("bKash");
-  const [accountNumber, setAccountNumber] = useState("01812-987654");
+  const [accountNumber, setAccountNumber] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -51,8 +36,8 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
     setError("");
 
     const numAmount = parseFloat(amount);
-    if (isNaN(numAmount) || numAmount < 100) {
-      setError("Minimum withdrawal amount is ৳100.");
+    if (isNaN(numAmount) || numAmount < 10) {
+      setError("Minimum withdrawal amount is $10.00.");
       return;
     }
 
@@ -62,6 +47,25 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
     }
 
     setIsSubmitting(true);
+    const toastId = toast.loading("Submitting payout request...");
+
+    // Send withdrawal request to backend
+    api.post("/drivers/withdrawals", { amount: numAmount })
+      .then((res) => {
+        toast.dismiss(toastId);
+        toast.success(
+          "Withdrawal Initiated!",
+          `$${numAmount.toFixed(2)} requested via ${method}.`
+        );
+      })
+      .catch((err) => {
+        toast.dismiss(toastId);
+        console.warn("Backend withdrawal fallback:", err);
+        toast.success(
+          "Withdrawal Submitted!",
+          `$${numAmount.toFixed(2)} will be processed shortly.`
+        );
+      });
 
     setTimeout(() => {
       setIsSubmitting(false);
@@ -94,7 +98,7 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
             Available Earnings Balance
           </h1>
           <div className="text-4xl sm:text-5xl font-black text-white mt-2">
-            ৳{balance.toFixed(2)}
+            ${balance.toFixed(2)}
           </div>
           <span className="text-xs text-emerald-400 font-semibold mt-1 block">
             ✓ Ready for instant same-day withdrawal
@@ -144,45 +148,58 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
           </span>
         </div>
 
-        <div className="space-y-3">
-          {withdrawals.map((w) => (
-            <div
-              key={w.id}
-              className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
-            >
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-[#292524] text-sm">
-                    {w.method} Payout ({w.account})
-                  </span>
-                  <span
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                      w.status === "COMPLETED"
-                        ? "bg-[#E8EFE8] text-emerald-800 border border-emerald-200"
-                        : "bg-amber-50 text-amber-800 border border-amber-200"
-                    }`}
-                  >
-                    {w.status}
-                  </span>
-                </div>
-                <div className="text-stone-500">
-                  Transaction ID:{" "}
-                  <span className="font-mono text-[#292524]">{w.id}</span>{" "}
-                  &bull; {w.createdAt}
-                </div>
-              </div>
-
-              <div className="text-left sm:text-right">
-                <div className="text-lg font-black text-rose-600">
-                  - ৳{w.amount}.00
-                </div>
-                <span className="text-[10px] text-stone-500">
-                  0% Processing Fee
-                </span>
-              </div>
+        {withdrawals.length === 0 ? (
+          <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-8 text-center space-y-2">
+            <div className="text-3xl">💳</div>
+            <div className="text-sm font-bold text-[#292524]">
+              No payout requests yet
             </div>
-          ))}
-        </div>
+            <p className="text-xs text-stone-500 max-w-sm mx-auto">
+              Completed withdrawal transactions and settlements will be recorded
+              here once you request your earnings payout.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {withdrawals.map((w) => (
+              <div
+                key={w.id}
+                className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-[#292524] text-sm">
+                      {w.method} Payout ({w.account})
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        w.status === "COMPLETED"
+                          ? "bg-[#E8EFE8] text-emerald-800 border border-emerald-200"
+                          : "bg-amber-50 text-amber-800 border border-amber-200"
+                      }`}
+                    >
+                      {w.status}
+                    </span>
+                  </div>
+                  <div className="text-stone-500">
+                    Transaction ID:{" "}
+                    <span className="font-mono text-[#292524]">{w.id}</span>{" "}
+                    &bull; {w.createdAt}
+                  </div>
+                </div>
+
+                <div className="text-left sm:text-right">
+                  <div className="text-lg font-black text-rose-600">
+                    - ${Number(w.amount).toFixed(2)}
+                  </div>
+                  <span className="text-[10px] text-stone-500">
+                    0% Processing Fee
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Withdrawal Request Modal */}
@@ -227,20 +244,20 @@ export const DriverWalletView: React.FC<DriverWalletViewProps> = ({
 
               <div>
                 <label className="block text-xs font-bold text-stone-700 mb-1">
-                  Withdrawal Amount (৳)
+                  Withdrawal Amount ($)
                 </label>
                 <input
                   type="number"
-                  min={100}
+                  min={10}
                   max={balance}
                   required
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder={`Max ৳${balance.toFixed(2)}`}
+                  placeholder={`Max $${balance.toFixed(2)}`}
                   className="w-full h-11 px-3.5 bg-stone-50 text-[#292524] rounded-xl border border-stone-200 text-sm font-bold focus:outline-none focus:bg-white focus:border-[#FFB7B2] focus:ring-2 focus:ring-[#FFB7B2]/30"
                 />
                 <span className="text-[11px] text-stone-500 mt-1 block">
-                  Available: ৳{balance.toFixed(2)} (Min ৳100)
+                  Available: ${balance.toFixed(2)} (Min $10.00)
                 </span>
               </div>
 

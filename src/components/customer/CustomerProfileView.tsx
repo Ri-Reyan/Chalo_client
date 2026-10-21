@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface CustomerProfileViewProps {
   customerName: string;
@@ -11,8 +11,14 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
   customerName,
   customerEmail,
 }) => {
-  const [name, setName] = useState(customerName || "Sarah Khan");
+  const [name, setName] = useState(customerName || "");
   const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    if (customerName) {
+      setName(customerName);
+    }
+  }, [customerName]);
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +48,7 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
             <span className="text-[11px] text-stone-500 block">
               Customer Balance
             </span>
-            <div className="text-2xl font-black text-[#292524]">৳0.00</div>
+            <div className="text-2xl font-black text-[#292524]">$0.00</div>
             <span className="text-[10px] text-emerald-700 font-semibold">
               Cashless Auto-Billing Active
             </span>
@@ -119,20 +125,32 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
             </h3>
             <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 text-xs space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-stone-600 font-medium">Emergency SOS Hotline</span>
-                <span className="text-emerald-700 font-bold">✓ 24/7 Monitored</span>
+                <span className="text-stone-600 font-medium">
+                  Emergency SOS Hotline
+                </span>
+                <span className="text-emerald-700 font-bold">
+                  ✓ 24/7 Monitored
+                </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-600 font-medium">Live GPS Route Tracking</span>
+                <span className="text-stone-600 font-medium">
+                  Live GPS Route Tracking
+                </span>
                 <span className="text-emerald-700 font-bold">✓ Active</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-600 font-medium">Verified Drivers (NID &amp; License)</span>
+                <span className="text-stone-600 font-medium">
+                  Verified Drivers (NID &amp; License)
+                </span>
                 <span className="text-emerald-700 font-bold">✓ Enforced</span>
               </div>
               <div className="flex items-center justify-between border-t border-stone-200 pt-2">
-                <span className="text-stone-600 font-medium">Guaranteed Zero Surge Pricing</span>
-                <span className="text-emerald-700 font-bold">✓ 100% Locked</span>
+                <span className="text-stone-600 font-medium">
+                  Guaranteed Zero Surge Pricing
+                </span>
+                <span className="text-emerald-700 font-bold">
+                  ✓ 100% Locked
+                </span>
               </div>
             </div>
           </div>
@@ -144,16 +162,28 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
             </h3>
             <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 text-xs space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-stone-600 font-medium">Default Payment</span>
-                <span className="text-[#292524] font-semibold">Cashless / Auto-Captured</span>
+                <span className="text-stone-600 font-medium">
+                  Default Payment
+                </span>
+                <span className="text-[#292524] font-semibold">
+                  Cashless / Auto-Captured
+                </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-600 font-medium">Digital Ride Invoices</span>
-                <span className="text-[#292524] font-semibold">Instant Download</span>
+                <span className="text-stone-600 font-medium">
+                  Digital Ride Invoices
+                </span>
+                <span className="text-[#292524] font-semibold">
+                  Instant Download
+                </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-600 font-medium">Cancellation Window</span>
-                <span className="text-emerald-700 font-semibold">Free within 3 mins</span>
+                <span className="text-stone-600 font-medium">
+                  Cancellation Window
+                </span>
+                <span className="text-emerald-700 font-semibold">
+                  Free within 3 mins
+                </span>
               </div>
             </div>
           </div>

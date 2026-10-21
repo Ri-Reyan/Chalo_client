@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface DriverProfileViewProps {
   driverName: string;
@@ -19,8 +19,14 @@ export const DriverProfileView: React.FC<DriverProfileViewProps> = ({
   isOnline,
   balance,
 }) => {
-  const [name, setName] = useState(driverName || "Rafiqul Alam");
+  const [name, setName] = useState(driverName || "");
   const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    if (driverName) {
+      setName(driverName);
+    }
+  }, [driverName]);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,9 +53,11 @@ export const DriverProfileView: React.FC<DriverProfileViewProps> = ({
           </div>
 
           <div className="bg-stone-50 border border-stone-200/80 rounded-2xl px-5 py-3 text-center sm:text-right shrink-0">
-            <span className="text-[11px] text-stone-500 block">Available Balance</span>
+            <span className="text-[11px] text-stone-500 block">
+              Available Balance
+            </span>
             <div className="text-2xl font-black text-[#292524]">
-              ৳{balance.toFixed(2)}
+              ${balance.toFixed(2)}
             </div>
             <span className="text-[10px] text-emerald-700 font-semibold">
               Status: {isOnline ? "Online 🟢" : "Offline ⏸️"}
@@ -156,19 +164,27 @@ export const DriverProfileView: React.FC<DriverProfileViewProps> = ({
 
             <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 text-xs space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-stone-600 font-medium">Driver License Check:</span>
+                <span className="text-stone-600 font-medium">
+                  Driver License Check:
+                </span>
                 <span className="text-emerald-700 font-bold">✓ Verified</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-600 font-medium">National ID (NID):</span>
+                <span className="text-stone-600 font-medium">
+                  National ID (NID):
+                </span>
                 <span className="text-emerald-700 font-bold">✓ Verified</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-600 font-medium">Vehicle Fitness Certificate:</span>
+                <span className="text-stone-600 font-medium">
+                  Vehicle Fitness Certificate:
+                </span>
                 <span className="text-emerald-700 font-bold">✓ Passed</span>
               </div>
               <div className="flex items-center justify-between border-t border-stone-200 pt-2">
-                <span className="text-stone-600 font-medium">Platform Commission Rate:</span>
+                <span className="text-stone-600 font-medium">
+                  Platform Commission Rate:
+                </span>
                 <span className="text-emerald-700 font-bold">10% Flat Cut</span>
               </div>
             </div>

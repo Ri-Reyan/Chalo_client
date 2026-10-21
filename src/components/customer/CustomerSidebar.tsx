@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/auth.context";
 
 export type CustomerTab = "request" | "tracking" | "history" | "profile";
 
@@ -21,16 +21,18 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
   customerName,
   customerEmail,
 }) => {
-  const router = useRouter();
+  const { logout } = useAuth();
 
-  const handleSignOut = () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("chalo_user");
-    }
-    router.push("/login");
+  const handleSignOut = async () => {
+    await logout();
   };
 
-  const navItems: { id: CustomerTab; label: string; icon: string; badge?: string }[] = [
+  const navItems: {
+    id: CustomerTab;
+    label: string;
+    icon: string;
+    badge?: string;
+  }[] = [
     {
       id: "request",
       label: "Request Ride",
@@ -88,7 +90,7 @@ export const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                 {customerName || "Customer"}
               </div>
               <div className="text-[11px] text-stone-500 truncate">
-                {customerEmail || "customer@chalo.app"}
+                {customerEmail || "No email connected"}
               </div>
             </div>
           </div>

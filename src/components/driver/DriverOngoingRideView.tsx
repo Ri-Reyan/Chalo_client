@@ -1,7 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DriverRideOffer } from "./AvailableRequestsView";
+import ConfirmModal from "@/components/common/ConfirmModal";
+import toast from "@/lib/toast";
+import api from "@/lib/axios";
+import { getSocket, joinRideRoom, leaveRideRoom } from "@/lib/socket";
 
 interface DriverOngoingRideViewProps {
   ride: DriverRideOffer | null;
@@ -16,6 +20,7 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
 }) => {
   // 1: En Route to Pickup -> 2: Arrived / Passenger Boarding -> 3: In Transit -> 4: Completed
   const [tripStep, setTripStep] = useState<1 | 2 | 3 | 4>(1);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
   if (!ride) {
     return (
@@ -34,12 +39,46 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
     );
   }
 
-  const handleArrivedAtPickup = () => {
+  // Real-time synchronization via Socket.IO
+  useEffect(() => {
+    if (!ride) return;
+    joinRideRoom(ride.id);
+
+    const socket = getSocket();
+    const handleRemoteCompleted = (data: any) => {
+      setTripStep(4);
+      toast.success(
+        "Trip Completed!",
+        `Customer arrived safely. $${Number(ride.netEarnings).toFixed(2)} deposited to wallet.`
+      );
+    };
+
+    socket.on("ride:completed", handleRemoteCompleted);
+
+    return () => {
+      leaveRideRoom(ride.id);
+      socket.off("ride:completed", handleRemoteCompleted);
+    };
+  }, [ride]);
+
+  const handleArrivedAtPickup = async () => {
     setTripStep(2);
+    toast.success("Arrived at Pickup", "Passenger has been notified.");
+    try {
+      await api.post(`/rides/${ride.id}/arrived`);
+    } catch (e) {
+      console.warn("Backend arrived fallback:", e);
+    }
   };
 
-  const handleStartTrip = () => {
+  const handleStartTrip = async () => {
     setTripStep(3);
+    toast.info("Trip Started", "Heading towards drop-off destination.");
+    try {
+      await api.post(`/rides/${ride.id}/start`);
+    } catch (e) {
+      console.warn("Backend start trip fallback:", e);
+    }
   };
 
   const handleFinishRide = () => {
@@ -76,7 +115,7 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
               Net Fare Take-Home
             </span>
             <div className="text-2xl font-black text-emerald-800">
-              + ৳{ride.netEarnings}.00
+              + ${Number(ride.netEarnings).toFixed(2)}
             </div>
           </div>
         </div>
@@ -186,11 +225,7 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
             <div className="pt-1">
               <button
                 type="button"
-                onClick={() => {
-                  if (confirm("Are you sure you want to cancel this ride?")) {
-                    onRideCancelled();
-                  }
-                }}
+                onClick={() => setIsCancelModalOpen(true)}
                 className="w-full py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
               >
                 <span>✕ Cancel Ride</span>
@@ -218,7 +253,8 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
                     Passenger At Pickup Location
                   </div>
                   <p className="text-xs text-stone-500 mt-1">
-                    Confirm passenger has boarded and begin navigating to destination.
+                    Confirm passenger has boarded and begin navigating to
+                    destination.
                   </p>
                 </div>
 
@@ -259,11 +295,10 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
                     Trip Completed!
                   </div>
                   <div className="text-2xl font-black text-emerald-700">
-                    + ৳{ride.netEarnings}.00
+                    + ${Number(ride.netEarnings).toFixed(2)}
                   </div>
                   <div className="text-[11px] text-stone-500">
-                    Gross: ৳{ride.grossFare}.00 | 10% Chalo cut: -৳
-                    {Math.round(ride.grossFare * 0.1)}.00
+                    Gross: ${Number(ride.grossFare).toFixed(2)} | 10% Chalo cut: -${(Number(ride.grossFare) * 0.1).toFixed(2)}
                   </div>
                   <span className="text-[10px] text-emerald-700 font-bold block pt-1">
                     ✓ Credited immediately to your driver wallet
@@ -282,6 +317,20 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
           </div>
         </div>
       </div>
+      {/* Driver Cancel Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        onConfirm={() => {
+          toast.info("Ride cancelled", "You cancelled the ongoing trip.");
+          onRideCancelled();
+        }}
+        title="Cancel Accepted Ride?"
+        message="Are you sure you want to cancel this ride? The passenger will be notified immediately."
+        confirmText="Yes, Cancel Ride"
+        cancelText="Continue Trip"
+        variant="danger"
+      />
     </div>
   );
 };

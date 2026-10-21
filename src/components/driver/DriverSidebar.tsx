@@ -2,9 +2,14 @@
 
 import React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/auth.context";
 
-export type DriverTab = "requests" | "ongoing" | "history" | "withdraw" | "profile";
+export type DriverTab =
+  | "requests"
+  | "ongoing"
+  | "history"
+  | "withdraw"
+  | "profile";
 
 interface DriverSidebarProps {
   activeTab: DriverTab;
@@ -27,21 +32,22 @@ export const DriverSidebar: React.FC<DriverSidebarProps> = ({
   vehicleType,
   balance,
 }) => {
-  const router = useRouter();
+  const { logout } = useAuth();
 
-  const handleSignOut = () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("chalo_user");
-    }
-    router.push("/login");
+  const handleSignOut = async () => {
+    await logout();
   };
 
-  const navItems: { id: DriverTab; label: string; icon: string; badge?: string }[] = [
+  const navItems: {
+    id: DriverTab;
+    label: string;
+    icon: string;
+    badge?: string;
+  }[] = [
     {
       id: "requests",
       label: "Available Requests",
       icon: "📲",
-      badge: isOnline && !hasActiveRide ? "1 New" : undefined,
     },
     {
       id: "ongoing",
@@ -100,13 +106,15 @@ export const DriverSidebar: React.FC<DriverSidebarProps> = ({
               </div>
               <div className="text-[11px] text-stone-600 font-semibold flex items-center gap-1">
                 <span>{vehicleType === "BIKE" ? "🏍️ Bike" : "🚗 Car"}</span>
-                <span className="text-stone-400">&bull; 4.95 ★</span>
+                <span className="text-emerald-700">&bull; Verified</span>
               </div>
             </div>
           </div>
           <div className="mt-3 pt-2.5 border-t border-stone-200/70 flex items-center justify-between text-xs">
             <span className="text-stone-500 font-medium">Balance:</span>
-            <span className="font-extrabold text-[#292524]">৳{balance.toFixed(2)}</span>
+            <span className="font-extrabold text-[#292524]">
+              ${balance.toFixed(2)}
+            </span>
           </div>
         </div>
 
@@ -116,9 +124,7 @@ export const DriverSidebar: React.FC<DriverSidebarProps> = ({
             <div className="flex items-center gap-2">
               <span
                 className={`w-3 h-3 rounded-full ${
-                  isOnline
-                    ? "bg-emerald-500 animate-ping"
-                    : "bg-stone-400"
+                  isOnline ? "bg-emerald-500 animate-ping" : "bg-stone-400"
                 }`}
               />
               <span className="text-xs font-bold text-[#292524]">

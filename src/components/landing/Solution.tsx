@@ -128,7 +128,7 @@ export const Solution: React.FC = () => {
               Guaranteed Upfront Fare
             </span>
             <div className="text-xl font-bold text-[#292524] mt-0.5">
-              ৳185.00
+              $4.20
             </div>
             <div className="text-[11px] text-[#78716C]">
               Dhanmondi → Gulshan 1 (8.4 km)
@@ -137,15 +137,15 @@ export const Solution: React.FC = () => {
           <div className="bg-white/80 rounded-2xl p-3 border border-stone-200/50 space-y-1.5 text-xs">
             <div className="flex justify-between text-[#78716C]">
               <span>Base Fare</span>
-              <span className="font-semibold text-[#292524]">৳40.00</span>
+              <span className="font-semibold text-[#292524]">$1.00</span>
             </div>
             <div className="flex justify-between text-[#78716C]">
-              <span>Distance (8.4km × ৳15)</span>
-              <span className="font-semibold text-[#292524]">৳126.00</span>
+              <span>Distance (8.4km × $0.20)</span>
+              <span className="font-semibold text-[#292524]">$1.68</span>
             </div>
             <div className="flex justify-between text-[#78716C]">
               <span>Service Fee</span>
-              <span className="font-semibold text-[#292524]">৳19.00</span>
+              <span className="font-semibold text-[#292524]">$1.52</span>
             </div>
             <div className="border-t border-stone-200 pt-1.5 flex justify-between font-bold text-emerald-700">
               <span>Surge Multiplier</span>
@@ -270,7 +270,7 @@ export const Solution: React.FC = () => {
               Today&apos;s Earnings
             </span>
             <div className="text-2xl font-bold text-[#292524] mt-0.5">
-              ৳1,850.00
+              $142.50
             </div>
             <div className="text-[11px] text-[#78716C]">
               9 Completed Rides • 10% Flat Cut
@@ -279,10 +279,10 @@ export const Solution: React.FC = () => {
           <div className="bg-white/80 rounded-2xl p-3 border border-stone-200/50 space-y-2 text-xs">
             <div className="flex items-center justify-between">
               <span className="text-[#78716C]">Available Balance</span>
-              <span className="font-bold text-[#292524]">৳1,850.00</span>
+              <span className="font-bold text-[#292524]">$142.50</span>
             </div>
             <div className="flex items-center justify-between text-emerald-700 font-medium">
-              <span>Instant bKash/Bank</span>
+              <span>Instant Bank/Debit</span>
               <span>✓ Ready</span>
             </div>
           </div>

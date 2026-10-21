@@ -2,23 +2,23 @@
 
 :root {
   /* Softly Marketing Palette */
-  --soft-bg: #FDFCF8;
-  --soft-sage: #E8EFE8;
-  --soft-lavender: #EFEDF4;
-  --soft-coral: #FFB7B2;
-  --soft-coral-dark: #FF9E98;
+  --soft-bg: #fdfcf8;
+  --soft-sage: #e8efe8;
+  --soft-lavender: #efedf4;
+  --soft-coral: #ffb7b2;
+  --soft-coral-dark: #ff9e98;
   --soft-dark: #292524;
-  --soft-muted: #78716C;
+  --soft-muted: #78716c;
   --soft-border: rgba(41, 37, 36, 0.08);
 
   /* Chalo App/Dashboard Harmonized Brand Theme */
-  --bg-main: #FDFCF8;
-  --bg-card: #FFFFFF;
-  --bg-card-light: #F7F6F0;
-  --accent-primary: #FFB7B2;
-  --accent-hover: #FF9E98;
-  --border-color: #E7E5E4;
-  --text-light: #FDFCF8;
+  --bg-main: #fdfcf8;
+  --bg-card: #ffffff;
+  --bg-card-light: #f7f6f0;
+  --accent-primary: #ffb7b2;
+  --accent-hover: #ff9e98;
+  --border-color: #e7e5e4;
+  --text-light: #fdfcf8;
   --text-dark: #292524;
   --success: #10b981;
   --warning: #f59e0b;
@@ -44,7 +44,8 @@
 }
 
 @keyframes float-slow {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) scale(1);
   }
   50% {
@@ -53,7 +54,8 @@
 }
 
 @keyframes float-slow-reverse {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) scale(1);
   }
   50% {
@@ -62,7 +64,8 @@
 }
 
 @keyframes pulse-subtle {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 4px 20px -2px rgba(255, 183, 178, 0.4);
   }
   50% {
@@ -83,7 +86,8 @@
 }
 
 .font-handwriting {
-  font-family: "Reenie Beanie", "Caveat", "Brush Script MT", "Segoe Script", cursive;
+  font-family:
+    "Reenie Beanie", "Caveat", "Brush Script MT", "Segoe Script", cursive;
 }
 
 /* Subtle SVG Grain Overlay */

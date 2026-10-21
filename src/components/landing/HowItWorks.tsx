@@ -28,10 +28,10 @@ const riderSteps: Step[] = [
         </div>
         <div className="flex gap-2">
           <div className="flex-1 bg-[#292524] text-white rounded-xl p-2 text-center text-xs font-bold shadow-xs">
-            🏍️ Bike • ৳140
+            🏍️ Bike • $2.40
           </div>
           <div className="flex-1 bg-stone-100 text-[#78716C] rounded-xl p-2 text-center text-xs font-semibold">
-            🚗 Car • ৳320
+            🚗 Car • $5.50
           </div>
         </div>
       </div>
@@ -98,7 +98,7 @@ const riderSteps: Step[] = [
             Fare settled via Card/bKash
           </div>
         </div>
-        <span className="text-base font-bold text-[#292524]">৳140.00 ✓</span>
+        <span className="text-base font-bold text-[#292524]">$2.40 ✓</span>
       </div>
     ),
   },
@@ -139,7 +139,7 @@ const driverSteps: Step[] = [
           <span className="font-bold text-[#292524]">
             Gulshan 2 → Dhanmondi
           </span>
-          <span className="font-bold text-emerald-700">৳210</span>
+          <span className="font-bold text-emerald-700">$3.80</span>
         </div>
         <div className="w-full bg-stone-100 rounded-full h-1.5 overflow-hidden">
           <div className="bg-rose-500 h-full w-2/3" />
@@ -187,7 +187,7 @@ const driverSteps: Step[] = [
           </div>
         </div>
         <span className="text-sm font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-xl">
-          + ৳189.00
+          + $3.42
         </span>
       </div>
     ),

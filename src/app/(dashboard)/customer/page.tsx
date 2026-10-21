@@ -1,34 +1,104 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import CustomerSidebar, { CustomerTab } from "@/components/customer/CustomerSidebar";
-import RequestRideView, { ActiveRideState } from "@/components/customer/RequestRideView";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import CustomerSidebar, {
+  CustomerTab,
+} from "@/components/customer/CustomerSidebar";
+import RequestRideView, {
+  ActiveRideState,
+} from "@/components/customer/RequestRideView";
 import LiveTrackingView from "@/components/customer/LiveTrackingView";
 import RideHistoryView from "@/components/customer/RideHistoryView";
 import CustomerProfileView from "@/components/customer/CustomerProfileView";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useAuth } from "@/context/auth.context";
+import toast from "@/lib/toast";
+import api from "@/lib/axios";
+import { getSocket, joinUserChannel, joinRideRoom, leaveRideRoom } from "@/lib/socket";
 
-export default function CustomerDashboardPage() {
+function CustomerDashboardContent() {
+  const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<CustomerTab>("request");
   const [activeRide, setActiveRide] = useState<ActiveRideState | null>(null);
   const [completedRides, setCompletedRides] = useState<ActiveRideState[]>([]);
-  const [customerName, setCustomerName] = useState("Sarah Khan");
-  const [customerEmail, setCustomerEmail] = useState("customer@chalo.app");
 
-  // Load user from localStorage if logged in
+  // Check for active ride returned from Stripe Checkout
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("chalo_user");
-      if (stored) {
+      const saved = sessionStorage.getItem("chalo_active_ride");
+      if (saved) {
         try {
-          const parsed = JSON.parse(stored);
-          if (parsed.name) setCustomerName(parsed.name);
-          if (parsed.email) setCustomerEmail(parsed.email);
-        } catch {
-          // ignore parsing error
+          const parsed = JSON.parse(saved);
+          setActiveRide(parsed);
+          setActiveTab("tracking");
+          sessionStorage.removeItem("chalo_active_ride");
+          return;
+        } catch (e) {
+          console.error("Failed to parse saved active ride:", e);
         }
       }
     }
-  }, []);
+
+    if (searchParams.get("tab") === "tracking") {
+      setActiveTab("tracking");
+      // Fetch active ride from server if available
+      api
+        .get("/rides/active?role=CUSTOMER")
+        .then((res) => {
+          if (res.data?.success && res.data?.data) {
+            setActiveRide(res.data.data);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [searchParams]);
+
+  // Real-time synchronization for customer ride updates
+  useEffect(() => {
+    if (!user?.id) return;
+    joinUserChannel(user.id, "CUSTOMER");
+
+    const socket = getSocket();
+    const handleRideAccepted = (data: any) => {
+      if (data?.driver) {
+        setActiveRide((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: "ACCEPTED",
+                driver: data.driver,
+              }
+            : null,
+        );
+        toast.success(
+          "Driver Assigned!",
+          `${data.driver.name} accepted your ride and is en route.`,
+        );
+      }
+    };
+
+    const handleNoDriverFound = () => {
+      toast.error(
+        "No Drivers Available",
+        "Radius limit reached. Your upfront payment hold has been refunded.",
+      );
+      setActiveRide(null);
+      setActiveTab("request");
+    };
+
+    socket.on("ride:accepted", handleRideAccepted);
+    socket.on("ride:no_driver", handleNoDriverFound);
+
+    return () => {
+      socket.off("ride:accepted", handleRideAccepted);
+      socket.off("ride:no_driver", handleNoDriverFound);
+    };
+  }, [user]);
+
+  const customerName = user?.name || "Customer";
+  const customerEmail = user?.email || "";
 
   const handleRideCreated = (newRide: ActiveRideState) => {
     setActiveRide(newRide);
@@ -77,10 +147,7 @@ export default function CustomerDashboardPage() {
           )}
 
           {activeTab === "history" && (
-            <RideHistoryView
-              rides={completedRides}
-              onRebook={handleRebook}
-            />
+            <RideHistoryView rides={completedRides} onRebook={handleRebook} />
           )}
 
           {activeTab === "profile" && (
@@ -95,3 +162,12 @@ export default function CustomerDashboardPage() {
   );
 }
 
+export default function CustomerDashboardPage() {
+  return (
+    <ProtectedRoute allowedRoles={["CUSTOMER"]}>
+      <Suspense fallback={<div className="min-h-screen bg-[#FDFCF8]" />}>
+        <CustomerDashboardContent />
+      </Suspense>
+    </ProtectedRoute>
+  );
+}

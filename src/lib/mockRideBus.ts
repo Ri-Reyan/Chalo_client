@@ -51,17 +51,17 @@ export const mockRideBus = {
 
   // Driver Balance
   getDriverBalance: (): number => {
-    if (typeof window === "undefined") return 1850;
+    if (typeof window === "undefined") return 0;
     try {
       const stored = localStorage.getItem(DRIVER_WALLET_KEY);
-      return stored ? parseFloat(stored) : 1850;
+      return stored ? parseFloat(stored) : 0;
     } catch {
-      return 1850;
+      return 0;
     }
   },
 
   updateDriverBalance: (amountDelta: number): number => {
-    if (typeof window === "undefined") return 1850;
+    if (typeof window === "undefined") return 0;
     const current = mockRideBus.getDriverBalance();
     const newBal = Math.max(0, current + amountDelta);
     localStorage.setItem(DRIVER_WALLET_KEY, newBal.toFixed(2));
@@ -85,4 +85,3 @@ export const mockRideBus = {
     localStorage.setItem("chalo_user", JSON.stringify(user));
   },
 };
-

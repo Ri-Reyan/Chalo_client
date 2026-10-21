@@ -76,4 +76,3 @@ export interface Withdrawal {
   createdAt: string;
   updatedAt: string;
 }
-

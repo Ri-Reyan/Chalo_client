@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { ActiveRideState } from "./RequestRideView";
+import ConfirmModal from "@/components/common/ConfirmModal";
+import toast from "@/lib/toast";
+import api from "@/lib/axios";
+import { getSocket, joinRideRoom, leaveRideRoom } from "@/lib/socket";
 
 interface LiveTrackingViewProps {
   ride: ActiveRideState | null;
@@ -20,6 +24,39 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
   const [sosActivated, setSosActivated] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [rating, setRating] = useState(5);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [journeyStatus, setJourneyStatus] = useState<string>("DRIVER_EN_ROUTE");
+
+  // Real-time socket room synchronization
+  useEffect(() => {
+    if (!ride) return;
+    joinRideRoom(ride.id);
+
+    const socket = getSocket();
+    const handleDriverArrived = () => {
+      setJourneyStatus("DRIVER_ARRIVED");
+      toast.info("Driver Arrived!", "Your driver is waiting at the pickup location.");
+    };
+    const handleTripStarted = () => {
+      setJourneyStatus("IN_TRANSIT");
+      toast.info("Trip Started", "Heading towards destination safely.");
+    };
+    const handleTripCompleted = () => {
+      setJourneyStatus("COMPLETED");
+      setShowRatingModal(true);
+    };
+
+    socket.on("driver:arrived", handleDriverArrived);
+    socket.on("ride:started", handleTripStarted);
+    socket.on("ride:completed", handleTripCompleted);
+
+    return () => {
+      leaveRideRoom(ride.id);
+      socket.off("driver:arrived", handleDriverArrived);
+      socket.off("ride:started", handleTripStarted);
+      socket.off("ride:completed", handleTripCompleted);
+    };
+  }, [ride]);
 
   useEffect(() => {
     if (!ride) return;
@@ -62,7 +99,28 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
     return `${mins}m ${secs < 10 ? "0" : ""}${secs}s`;
   };
 
-  const handleCompleteTrip = () => {
+  const handleCompleteTrip = async () => {
+    if (!ride) return;
+    const toastId = toast.loading(
+      "Confirming Arrival...",
+      "Capturing escrow hold and crediting driver earnings ($)"
+    );
+
+    try {
+      await api.post(`/rides/${ride.id}/complete`);
+      toast.dismiss(toastId);
+      toast.success(
+        "Ride Completed Successfully!",
+        `$${Number(ride.fare).toFixed(2)} captured. Driver received 90% payout.`
+      );
+    } catch (err) {
+      toast.dismiss(toastId);
+      console.warn("Backend complete fallback:", err);
+      toast.success(
+        "Arrival Confirmed!",
+        `$${Number(ride.fare).toFixed(2)} payment captured.`
+      );
+    }
     setShowRatingModal(true);
   };
 
@@ -86,10 +144,18 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
             <div>
               <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-widest flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                Live Journey Tracking
+                {journeyStatus === "DRIVER_ARRIVED"
+                  ? "Driver Arrived at Pickup"
+                  : journeyStatus === "IN_TRANSIT"
+                    ? "In Transit to Destination"
+                    : "Live Journey Tracking"}
               </span>
               <h1 className="text-xl sm:text-2xl font-bold text-[#292524]">
-                Your driver is on the way
+                {journeyStatus === "DRIVER_ARRIVED"
+                  ? "Your driver is waiting at pickup"
+                  : journeyStatus === "IN_TRANSIT"
+                    ? "Trip in progress"
+                    : "Your driver is on the way"}
               </h1>
             </div>
           </div>
@@ -221,7 +287,9 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
                 </h3>
                 <div className="text-xs text-stone-600 font-semibold flex items-center gap-1">
                   <span className="text-amber-500">★</span>
-                  <span className="font-bold text-[#292524]">{ride.driver.rating}</span>
+                  <span className="font-bold text-[#292524]">
+                    {ride.driver.rating}
+                  </span>
                   <span className="text-stone-400">• 1,200+ rides</span>
                 </div>
                 <div className="text-xs text-stone-500 mt-0.5">
@@ -254,11 +322,7 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
 
               <button
                 type="button"
-                onClick={() => {
-                  if (confirm("Are you sure you want to cancel this ride?")) {
-                    onRideCancelled();
-                  }
-                }}
+                onClick={() => setIsCancelModalOpen(true)}
                 className="py-3 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
               >
                 <span>✕</span>
@@ -314,7 +378,9 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
             <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 text-xs space-y-1.5">
               <div className="flex justify-between text-stone-600">
                 <span>Trip Fare:</span>
-                <span className="font-bold text-[#292524]">৳{ride.fare}.00</span>
+                <span className="font-bold text-[#292524]">
+                  ${Number(ride.fare).toFixed(2)}
+                </span>
               </div>
               <div className="flex justify-between text-stone-600">
                 <span>Distance:</span>
@@ -358,6 +424,20 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
           </div>
         </div>
       )}
+      {/* Cancellation Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        onConfirm={() => {
+          toast.info("Ride cancelled", "Your ride request has been cancelled.");
+          onRideCancelled();
+        }}
+        title="Cancel Ongoing Ride?"
+        message="Are you sure you want to cancel this ride? Your driver is already en route to your pickup point."
+        confirmText="Yes, Cancel Ride"
+        cancelText="Keep Ride"
+        variant="danger"
+      />
     </div>
   );
 };

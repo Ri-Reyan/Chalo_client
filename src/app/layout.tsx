@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/context/auth.context";
+import ToasterProvider from "@/components/common/ToasterProvider";
 
 export const metadata: Metadata = {
   title: "Chalo - Skip the wait, embrace the journey",
@@ -14,7 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased scroll-smooth">
       <body className="min-h-full flex flex-col font-sans bg-[#FDFCF8] text-[#292524] relative selection:bg-[#FFB7B2] selection:text-[#292524]">
-        {children}
+        <AuthProvider>
+          {children}
+          <ToasterProvider />
+        </AuthProvider>
       </body>
     </html>
   );

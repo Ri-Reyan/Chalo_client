@@ -59,7 +59,10 @@ export default function AuthLayout({
 
       {/* Auth Bottom Footer */}
       <footer className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 pb-6 text-center text-xs text-stone-500">
-        <p>&copy; 2026 Chalo Technologies Inc. Guaranteed flat fares & fair driver earnings.</p>
+        <p>
+          &copy; 2026 Chalo Technologies Inc. Guaranteed flat fares & fair
+          driver earnings.
+        </p>
       </footer>
     </div>
   );

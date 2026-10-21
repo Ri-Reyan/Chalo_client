@@ -1,18 +1,35 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/context/auth.context";
+import { getErrorMessage } from "@/lib/axios";
+import ConfirmModal from "@/components/common/ConfirmModal";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { login, user, isAuthenticated, loading } = useAuth();
+
   const [role, setRole] = useState<"CUSTOMER" | "DRIVER">("CUSTOMER");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!loading && isAuthenticated && user) {
+      const redirectParam = searchParams.get("redirect");
+      const target =
+        redirectParam || (user.role === "DRIVER" ? "/driver" : "/customer");
+      router.replace(target);
+    }
+  }, [loading, isAuthenticated, user, router, searchParams]);
 
   const handleQuickFill = (targetRole: "CUSTOMER" | "DRIVER") => {
     setRole(targetRole);
@@ -26,7 +43,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
 
@@ -35,34 +52,15 @@ export default function LoginPage() {
       return;
     }
 
-    setIsLoading(true);
+    setIsSubmitting(true);
 
-    // Simulate authentication and persist mock session
-    setTimeout(() => {
-      setIsLoading(false);
-
-      const mockUser = {
-        id: role === "CUSTOMER" ? "cust-uuid-1" : "driver-uuid-1",
-        name: role === "CUSTOMER" ? "Sarah Khan" : "Rafiqul Alam",
-        email: email.trim().toLowerCase(),
-        role: role,
-        vehicleType: role === "DRIVER" ? "BIKE" : null,
-        isOnline: false,
-        balance: "0.00",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      if (typeof window !== "undefined") {
-        localStorage.setItem("chalo_user", JSON.stringify(mockUser));
-      }
-
-      if (role === "CUSTOMER") {
-        router.push("/customer");
-      } else {
-        router.push("/driver");
-      }
-    }, 600);
+    try {
+      await login({ email, password });
+    } catch (err: unknown) {
+      setErrorMessage(getErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -201,7 +199,7 @@ export default function LoginPage() {
               href="#forgot"
               onClick={(e) => {
                 e.preventDefault();
-                alert("For this prototype, use the demo credentials above.");
+                setIsForgotModalOpen(true);
               }}
               className="text-stone-600 hover:text-[#292524] hover:underline font-medium"
             >
@@ -211,10 +209,10 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={isLoading}
-            className="w-full h-12 mt-2 rounded-xl bg-[#FFB7B2] hover:bg-[#FF9E98] text-[#292524] font-bold text-sm tracking-wide transition-all duration-200 hover:shadow-md active:scale-[0.99] flex items-center justify-center gap-2"
+            disabled={isSubmitting}
+            className="w-full h-12 mt-2 rounded-xl bg-[#FFB7B2] hover:bg-[#FF9E98] text-[#292524] font-bold text-sm tracking-wide transition-all duration-200 hover:shadow-md active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-60"
           >
-            {isLoading ? (
+            {isSubmitting ? (
               <div className="w-5 h-5 border-2 border-stone-900 border-t-transparent rounded-full animate-spin" />
             ) : (
               <span>
@@ -235,6 +233,31 @@ export default function LoginPage() {
           </Link>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={isForgotModalOpen}
+        onClose={() => setIsForgotModalOpen(false)}
+        title="Prototype Notice"
+        message="Password recovery is disabled for this MVP prototype. Please select a Quick-Fill Demo Account above to sign in instantly."
+        confirmText="Understood"
+        variant="info"
+        isAlertOnly
+      />
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="text-stone-700 text-sm font-semibold flex items-center gap-2">
+          <div className="w-4 h-4 border-2 border-[#292524] border-t-transparent rounded-full animate-spin" />
+          <span>Loading Chalo login...</span>
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

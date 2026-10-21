@@ -9,11 +9,11 @@ export const Hero: React.FC = () => {
   const [vehicle, setVehicle] = useState<"BIKE" | "CAR">("BIKE");
 
   // Calculate realistic mock distance and fare based on pickup/destination
-  const distanceKm = vehicle === "BIKE" ? 8.4 : 8.4;
+  const distanceKm = 8.4;
   const estimatedFare =
     vehicle === "BIKE"
-      ? Math.round(30 + distanceKm * 15) // Base 30 + 15/km
-      : Math.round(80 + distanceKm * 35); // Base 80 + 35/km
+      ? (1.0 + distanceKm * 0.2).toFixed(2)
+      : (3.0 + distanceKm * 0.5).toFixed(2);
 
   return (
     <section
@@ -162,7 +162,7 @@ export const Hero: React.FC = () => {
               <span className="text-xs text-[#78716C]">Estimated Total:</span>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl font-bold text-[#292524]">
-                  ৳{estimatedFare}
+                  ${estimatedFare}
                 </span>
                 <span className="text-xs text-[#78716C]">
                   (~{distanceKm} km • no surge)
@@ -211,7 +211,7 @@ export const Hero: React.FC = () => {
 
           <div className="flex flex-col items-center text-center p-2">
             <span className="text-2xl sm:text-3xl font-bold text-[#292524]">
-              0৳
+              $0
             </span>
             <span className="text-xs font-medium text-[#78716C] mt-1">
               🚫 Surge Multipliers

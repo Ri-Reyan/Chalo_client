@@ -90,7 +90,9 @@ const problemPoints: ProblemPoint[] = [
 ];
 
 export const ProblemStatement: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<"comparison" | "traditional" | "chalo">("comparison");
+  const [activeTab, setActiveTab] = useState<
+    "comparison" | "traditional" | "chalo"
+  >("comparison");
 
   return (
     <section
@@ -328,7 +330,8 @@ export const ProblemStatement: React.FC = () => {
               Ready for a ride without the surprises?
             </h4>
             <p className="mt-2 text-sm text-[#78716C]">
-              Experience fair fares and direct dispatch. Try booking your first ride in under 30 seconds.
+              Experience fair fares and direct dispatch. Try booking your first
+              ride in under 30 seconds.
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
@@ -352,4 +355,3 @@ export const ProblemStatement: React.FC = () => {
 };
 
 export default ProblemStatement;
-

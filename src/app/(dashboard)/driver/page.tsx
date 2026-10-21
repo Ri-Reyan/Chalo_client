@@ -9,34 +9,63 @@ import DriverOngoingRideView from "@/components/driver/DriverOngoingRideView";
 import DriverWalletView from "@/components/driver/DriverWalletView";
 import DriverHistoryView from "@/components/driver/DriverHistoryView";
 import DriverProfileView from "@/components/driver/DriverProfileView";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useAuth } from "@/context/auth.context";
+import api from "@/lib/axios";
+import { getSocket } from "@/lib/socket";
 
-export default function DriverDashboardPage() {
+function DriverDashboardContent() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<DriverTab>("requests");
   const [isOnline, setIsOnline] = useState(true);
   const [activeRide, setActiveRide] = useState<DriverRideOffer | null>(null);
   const [completedRides, setCompletedRides] = useState<DriverRideOffer[]>([]);
-  const [balance, setBalance] = useState(1850.0);
+  const [balance, setBalance] = useState<number>(() =>
+    typeof user?.balance === "number" ? user.balance : 0,
+  );
 
-  const [driverName, setDriverName] = useState("Rafiqul Alam");
-  const [driverEmail, setDriverEmail] = useState("driver@chalo.app");
-  const [vehicleType, setVehicleType] = useState<"BIKE" | "CAR">("BIKE");
-
-  // Load user from localStorage if logged in
+  // Fetch driver live balance and status from backend
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("chalo_user");
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          if (parsed.name) setDriverName(parsed.name);
-          if (parsed.email) setDriverEmail(parsed.email);
-          if (parsed.vehicleType) setVehicleType(parsed.vehicleType);
-        } catch {
-          // ignore parsing error
+    api
+      .get("/drivers/balance")
+      .then((res) => {
+        if (res.data?.success && res.data?.data) {
+          if (typeof res.data.data.balance === "number") {
+            setBalance(res.data.data.balance);
+          }
+          if (typeof res.data.data.isOnline === "boolean") {
+            setIsOnline(res.data.data.isOnline);
+          }
         }
-      }
+      })
+      .catch(() => {});
+  }, [user]);
+
+  // Synchronize online socket room
+  useEffect(() => {
+    if (!user?.id) return;
+    const socket = getSocket();
+    if (isOnline) {
+      socket.emit("driver:online", { driverId: user.id });
+    } else {
+      socket.emit("driver:offline");
     }
-  }, []);
+  }, [user, isOnline]);
+
+  const handleToggleOnline = async (nextOnline: boolean) => {
+    setIsOnline(nextOnline);
+    try {
+      await api.patch("/drivers/status", { isOnline: nextOnline });
+    } catch (e) {
+      console.warn("Status toggle error:", e);
+    }
+  };
+
+  const driverName = user?.name || "Driver Partner";
+  const driverEmail = user?.email || "";
+  const [vehicleType, setVehicleType] = useState<"BIKE" | "CAR">(
+    (user?.vehicleType as "BIKE" | "CAR") || "BIKE",
+  );
 
   const handleAcceptRide = (offer: DriverRideOffer) => {
     setActiveRide(offer);
@@ -69,7 +98,7 @@ export default function DriverDashboardPage() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         isOnline={isOnline}
-        setIsOnline={setIsOnline}
+        setIsOnline={handleToggleOnline}
         hasActiveRide={activeRide !== null}
         driverName={driverName}
         vehicleType={vehicleType}
@@ -120,5 +149,13 @@ export default function DriverDashboardPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function DriverDashboardPage() {
+  return (
+    <ProtectedRoute allowedRoles={["DRIVER"]}>
+      <DriverDashboardContent />
+    </ProtectedRoute>
   );
 }

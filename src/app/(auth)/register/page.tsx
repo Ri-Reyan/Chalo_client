@@ -1,18 +1,20 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/context/auth.context";
+import { getErrorMessage } from "@/lib/axios";
 
 function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { register, user, isAuthenticated, loading } = useAuth();
+
   const initialRole =
     searchParams.get("role") === "DRIVER" ? "DRIVER" : "CUSTOMER";
 
   const [role, setRole] = useState<"CUSTOMER" | "DRIVER">(initialRole);
-
-  // Exact fields matching backend Prisma schema (user.prisma & auth.schema.ts)
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,6 +22,14 @@ function RegisterContent() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!loading && isAuthenticated && user) {
+      const target = user.role === "DRIVER" ? "/driver" : "/customer";
+      router.replace(target);
+    }
+  }, [loading, isAuthenticated, user, router]);
 
   const handleQuickFill = (targetRole: "CUSTOMER" | "DRIVER") => {
     setRole(targetRole);
@@ -37,7 +47,7 @@ function RegisterContent() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
 
@@ -63,32 +73,19 @@ function RegisterContent() {
 
     setIsLoading(true);
 
-    // Simulate backend registration payload & response
-    setTimeout(() => {
-      setIsLoading(false);
-
-      const mockUser = {
-        id: role === "CUSTOMER" ? "cust-uuid-1" : "driver-uuid-1",
+    try {
+      await register({
         name: name.trim(),
         email: email.trim().toLowerCase(),
-        role: role,
-        vehicleType: role === "DRIVER" ? vehicleType : null,
-        isOnline: false,
-        balance: "0.00",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      if (typeof window !== "undefined") {
-        localStorage.setItem("chalo_user", JSON.stringify(mockUser));
-      }
-
-      if (role === "CUSTOMER") {
-        router.push("/customer");
-      } else {
-        router.push("/driver");
-      }
-    }, 600);
+        password,
+        role,
+        vehicleType: role === "DRIVER" ? vehicleType : undefined,
+      });
+    } catch (err: unknown) {
+      setErrorMessage(getErrorMessage(err));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -255,7 +252,7 @@ function RegisterContent() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 mt-2 rounded-xl bg-[#FFB7B2] hover:bg-[#FF9E98] text-[#292524] font-bold text-sm tracking-wide transition-all duration-200 hover:shadow-md active:scale-[0.99] flex items-center justify-center gap-2"
+            className="w-full h-12 mt-2 rounded-xl bg-[#FFB7B2] hover:bg-[#FF9E98] text-[#292524] font-bold text-sm tracking-wide transition-all duration-200 hover:shadow-md active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-60"
           >
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-stone-900 border-t-transparent rounded-full animate-spin" />

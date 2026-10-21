@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import api, { getErrorMessage } from "@/lib/axios";
+import toast from "@/lib/toast";
+import { getSocket } from "@/lib/socket";
 
 export interface DriverRideOffer {
   id: string;
@@ -21,49 +24,69 @@ interface AvailableRequestsViewProps {
   onGoOnline: () => void;
   onAcceptRide: (offer: DriverRideOffer) => void;
   vehicleType: "BIKE" | "CAR";
+  incomingOffer?: DriverRideOffer | null;
 }
-
-const mockInitialOffers: DriverRideOffer[] = [
-  {
-    id: "req-9841",
-    customerName: "Sarah Khan",
-    customerRating: "5.0 ★",
-    pickup: "Gulshan 2 Circle, Road 54",
-    destination: "Dhanmondi 27, Road 16",
-    distanceKm: 8.4,
-    pickupDistanceKm: 0.6,
-    grossFare: 140,
-    netEarnings: 126, // 90%
-    vehicleType: "BIKE",
-    expiresInSeconds: 30,
-  },
-  {
-    id: "req-9842",
-    customerName: "Tanvir Hasan",
-    customerRating: "4.9 ★",
-    pickup: "Banani 11 Shopping Zone",
-    destination: "Uttara Sector 7, Jashimuddin Ave",
-    distanceKm: 12.2,
-    pickupDistanceKm: 1.1,
-    grossFare: 210,
-    netEarnings: 189, // 90%
-    vehicleType: "BIKE",
-    expiresInSeconds: 30,
-  },
-];
 
 export const AvailableRequestsView: React.FC<AvailableRequestsViewProps> = ({
   isOnline,
   onGoOnline,
   onAcceptRide,
   vehicleType,
+  incomingOffer = null,
 }) => {
-  const [currentOfferIndex, setCurrentOfferIndex] = useState(0);
+  const [activeOffer, setActiveOffer] = useState<DriverRideOffer | null>(
+    incomingOffer,
+  );
   const [countdown, setCountdown] = useState(30);
 
-  const activeOffer = mockInitialOffers[currentOfferIndex] || null;
+  useEffect(() => {
+    setActiveOffer(incomingOffer);
+  }, [incomingOffer]);
 
-  // 30-second countdown for decision
+  // Real-time socket listener for incoming ride requests within radius
+  useEffect(() => {
+    if (!isOnline) return;
+    const socket = getSocket();
+
+    const handleNewRide = (offer: any) => {
+      if (offer) {
+        setActiveOffer(offer);
+        setCountdown(30);
+        toast.info(
+          "New Ride Offer Available!",
+          `Passenger nearby. Take-home pay: $${Number(offer.netEarnings).toFixed(2)}`
+        );
+      }
+    };
+
+    const handleRideTaken = (data: { rideId: string }) => {
+      if (activeOffer && activeOffer.id === data.rideId) {
+        setActiveOffer(null);
+        toast.info("Offer Taken", "Another driver accepted this trip.");
+      }
+    };
+
+    socket.on("ride:new", handleNewRide);
+    socket.on("ride:taken", handleRideTaken);
+
+    // Initial check for available rides from backend
+    api.get("/rides/available")
+      .then((res) => {
+        if (res.data?.success && res.data?.data?.length > 0) {
+          const first = res.data.data[0];
+          setActiveOffer(first);
+          setCountdown(30);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      socket.off("ride:new", handleNewRide);
+      socket.off("ride:taken", handleRideTaken);
+    };
+  }, [isOnline, activeOffer]);
+
+  // 30-second countdown for decision when active offer is present
   useEffect(() => {
     if (!isOnline || !activeOffer) return;
 
@@ -71,8 +94,8 @@ export const AvailableRequestsView: React.FC<AvailableRequestsViewProps> = ({
     const interval = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          // Time expired, rotate to next offer
-          setCurrentOfferIndex((curr) => (curr + 1) % mockInitialOffers.length);
+          // Time expired, clear offer
+          setActiveOffer(null);
           return 30;
         }
         return prev - 1;
@@ -80,15 +103,37 @@ export const AvailableRequestsView: React.FC<AvailableRequestsViewProps> = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isOnline, currentOfferIndex, activeOffer]);
+  }, [isOnline, activeOffer]);
 
   const handleDecline = () => {
-    setCurrentOfferIndex((curr) => (curr + 1) % mockInitialOffers.length);
+    setActiveOffer(null);
     setCountdown(30);
   };
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
     if (!activeOffer) return;
+    const toastId = toast.loading("Accepting trip offer...");
+
+    try {
+      const response = await api.post(`/rides/${activeOffer.id}/accept`);
+      toast.dismiss(toastId);
+      if (response.data?.success) {
+        toast.success(
+          "Trip Accepted!",
+          `Earn $${Number(activeOffer.netEarnings).toFixed(2)} upon completion.`
+        );
+      }
+    } catch (err) {
+      toast.dismiss(toastId);
+      const errMsg = getErrorMessage(err);
+      if (errMsg.toLowerCase().includes("already")) {
+        toast.error("Trip Taken", errMsg);
+        setActiveOffer(null);
+        return;
+      }
+      console.warn("Backend accept fallback:", err);
+    }
+
     onAcceptRide({
       ...activeOffer,
       vehicleType,
@@ -105,7 +150,8 @@ export const AvailableRequestsView: React.FC<AvailableRequestsViewProps> = ({
           You are currently Offline
         </h2>
         <p className="text-sm text-stone-500 max-w-md mx-auto">
-          Go online to start receiving nearby ride offers within your 2km radius. You maintain total control over your schedule.
+          Go online to start receiving nearby ride offers within your 2km
+          radius. You maintain total control over your schedule.
         </p>
         <button
           type="button"
@@ -131,14 +177,19 @@ export const AvailableRequestsView: React.FC<AvailableRequestsViewProps> = ({
             Available Requests
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-stone-500">
-            Incoming dispatch offers within your 2km radius with full upfront destination disclosure.
+            Incoming dispatch offers within your 2km radius with full upfront
+            destination disclosure.
           </p>
         </div>
 
         <div className="bg-stone-50 border border-stone-200/80 rounded-2xl px-5 py-3 text-center sm:text-right shrink-0">
-          <span className="text-[11px] text-stone-500 block">Radius Dispatch</span>
+          <span className="text-[11px] text-stone-500 block">
+            Radius Dispatch
+          </span>
           <div className="text-xl font-bold text-[#292524]">&le; 2.0 KM</div>
-          <span className="text-[10px] text-emerald-700 font-semibold">Strict Geo-Matching</span>
+          <span className="text-[10px] text-emerald-700 font-semibold">
+            Strict Geo-Matching
+          </span>
         </div>
       </div>
 
@@ -164,7 +215,8 @@ export const AvailableRequestsView: React.FC<AvailableRequestsViewProps> = ({
                   {activeOffer.customerName}
                 </h3>
                 <div className="text-xs text-stone-600 font-semibold">
-                  <span className="text-amber-500">★</span> {activeOffer.customerRating} &bull; Verified Passenger
+                  <span className="text-amber-500">★</span>{" "}
+                  {activeOffer.customerRating} &bull; Verified Passenger
                 </div>
               </div>
             </div>
@@ -205,16 +257,28 @@ export const AvailableRequestsView: React.FC<AvailableRequestsViewProps> = ({
           {/* Upfront Fare Breakdown */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
             <div className="bg-stone-50 border border-stone-200/80 rounded-xl p-3">
-              <span className="text-[11px] text-stone-500 block">Gross Fare</span>
-              <span className="text-base font-bold text-[#292524]">৳{activeOffer.grossFare}.00</span>
+              <span className="text-[11px] text-stone-500 block">
+                Gross Fare
+              </span>
+              <span className="text-base font-bold text-[#292524]">
+                ${Number(activeOffer.grossFare).toFixed(2)}
+              </span>
             </div>
             <div className="bg-stone-50 border border-stone-200/80 rounded-xl p-3">
-              <span className="text-[11px] text-stone-500 block">Platform Fee (Flat 10%)</span>
-              <span className="text-base font-bold text-stone-600">-৳{(activeOffer.grossFare * 0.1).toFixed(0)}.00</span>
+              <span className="text-[11px] text-stone-500 block">
+                Platform Fee (Flat 10%)
+              </span>
+              <span className="text-base font-bold text-stone-600">
+                -${(activeOffer.grossFare * 0.1).toFixed(2)}
+              </span>
             </div>
             <div className="bg-[#E8EFE8] border border-emerald-300 rounded-xl p-3 shadow-2xs">
-              <span className="text-[11px] text-emerald-800 font-bold block uppercase">Your Net Take-Home (90%)</span>
-              <span className="text-xl font-black text-emerald-800">+ ৳{activeOffer.netEarnings}.00</span>
+              <span className="text-[11px] text-emerald-800 font-bold block uppercase">
+                Your Net Take-Home (90%)
+              </span>
+              <span className="text-xl font-black text-emerald-800">
+                + ${Number(activeOffer.netEarnings).toFixed(2)}
+              </span>
             </div>
           </div>
 
@@ -232,21 +296,25 @@ export const AvailableRequestsView: React.FC<AvailableRequestsViewProps> = ({
               onClick={handleAccept}
               className="h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-base tracking-wide transition-all shadow-md hover:scale-[1.01]"
             >
-              Accept Trip (Earn ৳{activeOffer.netEarnings}) →
+              Accept Trip (Earn ${Number(activeOffer.netEarnings).toFixed(2)}) →
             </button>
           </div>
         </div>
       ) : (
-        <div className="bg-white border-2 border-dashed border-stone-300 rounded-3xl p-10 text-center space-y-4">
-          <div className="w-12 h-12 rounded-full bg-stone-100 flex items-center justify-center mx-auto text-xl">
+        <div className="bg-white border-2 border-dashed border-stone-300 rounded-3xl p-12 sm:p-16 text-center space-y-4">
+          <div className="w-16 h-16 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center mx-auto text-3xl shadow-inner animate-pulse">
             📡
           </div>
-          <h3 className="text-lg font-bold text-[#292524]">
-            Scanning for nearby ride requests...
-          </h3>
-          <p className="text-xs text-stone-500 max-w-sm mx-auto">
-            You will hear a ping and receive a 30-second decision offer as soon as a customer books in your area.
-          </p>
+          <div>
+            <h3 className="text-xl font-bold text-[#292524]">
+              Scanning for nearby ride requests...
+            </h3>
+            <p className="text-xs sm:text-sm text-stone-500 max-w-md mx-auto mt-1">
+              You are online and ready. You will hear an alert and receive a
+              30-second decision offer as soon as a customer requests a ride in
+              your 2km radius.
+            </p>
+          </div>
         </div>
       )}
     </div>

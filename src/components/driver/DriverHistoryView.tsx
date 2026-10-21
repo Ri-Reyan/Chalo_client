@@ -7,52 +7,10 @@ interface DriverHistoryViewProps {
   completedRides: DriverRideOffer[];
 }
 
-const mockDefaultDriverTrips: DriverRideOffer[] = [
-  {
-    id: "ride-hist-1",
-    customerName: "Farhana Rahman",
-    customerRating: "5.0 ★",
-    pickup: "Banani 11, Block D",
-    destination: "Dhanmondi 27, Road 16",
-    distanceKm: 9.2,
-    pickupDistanceKm: 0.5,
-    grossFare: 168,
-    netEarnings: 151, // 90%
-    vehicleType: "BIKE",
-    expiresInSeconds: 0,
-  },
-  {
-    id: "ride-hist-2",
-    customerName: "Tahsin Ahmed",
-    customerRating: "4.9 ★",
-    pickup: "Gulshan 1 Circle, Avenue 3",
-    destination: "Motijheel Commercial Zone",
-    distanceKm: 11.5,
-    pickupDistanceKm: 0.8,
-    grossFare: 202,
-    netEarnings: 182,
-    vehicleType: "BIKE",
-    expiresInSeconds: 0,
-  },
-  {
-    id: "ride-hist-3",
-    customerName: "Nusrat Jahan",
-    customerRating: "5.0 ★",
-    pickup: "Uttara Sector 7, Jashimuddin",
-    destination: "Gulshan 2, Road 54",
-    distanceKm: 13.0,
-    pickupDistanceKm: 1.2,
-    grossFare: 225,
-    netEarnings: 202,
-    vehicleType: "BIKE",
-    expiresInSeconds: 0,
-  },
-];
-
 export const DriverHistoryView: React.FC<DriverHistoryViewProps> = ({
   completedRides,
 }) => {
-  const allTrips = [...completedRides, ...mockDefaultDriverTrips];
+  const allTrips = completedRides;
   const totalEarnings = allTrips.reduce((acc, t) => acc + t.netEarnings, 0);
   const totalDistance = allTrips.reduce((acc, t) => acc + t.distanceKm, 0);
 
@@ -73,9 +31,11 @@ export const DriverHistoryView: React.FC<DriverHistoryViewProps> = ({
         </div>
 
         <div className="bg-[#E8EFE8] border border-emerald-200 rounded-2xl px-5 py-3 text-center sm:text-right shrink-0">
-          <span className="text-[11px] text-emerald-800 font-bold block uppercase">Total Historical Earnings</span>
+          <span className="text-[11px] text-emerald-800 font-bold block uppercase">
+            Total Historical Earnings
+          </span>
           <div className="text-3xl font-black text-emerald-800">
-            ৳{totalEarnings}.00
+            ${totalEarnings.toFixed(2)}
           </div>
         </div>
       </div>
@@ -83,70 +43,113 @@ export const DriverHistoryView: React.FC<DriverHistoryViewProps> = ({
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white border border-stone-200/80 rounded-2xl p-5 shadow-xs text-center">
-          <span className="text-xs text-stone-500 uppercase tracking-wider block">Completed Rides</span>
-          <div className="text-2xl font-black text-[#292524] mt-1">{allTrips.length} Rides</div>
+          <span className="text-xs text-stone-500 uppercase tracking-wider block">
+            Completed Rides
+          </span>
+          <div className="text-2xl font-black text-[#292524] mt-1">
+            {allTrips.length} Rides
+          </div>
         </div>
         <div className="bg-white border border-stone-200/80 rounded-2xl p-5 shadow-xs text-center">
-          <span className="text-xs text-stone-500 uppercase tracking-wider block">Total Distance Covered</span>
-          <div className="text-2xl font-black text-[#292524] mt-1">{totalDistance.toFixed(1)} km</div>
+          <span className="text-xs text-stone-500 uppercase tracking-wider block">
+            Total Distance Covered
+          </span>
+          <div className="text-2xl font-black text-[#292524] mt-1">
+            {totalDistance.toFixed(1)} km
+          </div>
         </div>
         <div className="bg-white border border-stone-200/80 rounded-2xl p-5 shadow-xs text-center">
-          <span className="text-xs text-stone-500 uppercase tracking-wider block">Average Passenger Rating</span>
+          <span className="text-xs text-stone-500 uppercase tracking-wider block">
+            Average Passenger Rating
+          </span>
           <div className="text-2xl font-black text-[#292524] mt-1 flex items-center justify-center gap-1">
-            <span className="text-amber-500">★</span> 4.96
+            {allTrips.length === 0 ? (
+              <span className="text-stone-400 text-base font-bold">
+                New Partner
+              </span>
+            ) : (
+              <>
+                <span className="text-amber-500">★</span> 5.0
+              </>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Trip List */}
-      <div className="space-y-3">
-        {allTrips.map((trip, idx) => (
-          <div
-            key={trip.id + idx}
-            className="bg-white border border-stone-200/80 rounded-2xl p-5 shadow-xs hover:border-stone-300 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
-          >
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center text-sm">
-                  {trip.vehicleType === "BIKE" ? "🏍️" : "🚗"}
-                </span>
-                <span className="font-bold text-[#292524] text-sm">
-                  Passenger: {trip.customerName}
-                </span>
-                <span className="text-xs text-stone-600 font-semibold flex items-center gap-0.5">
-                  <span className="text-amber-500">★</span> {trip.customerRating}
-                </span>
-              </div>
-
-              <div className="text-xs text-stone-600 pl-10">
-                <span className="text-emerald-700 font-semibold">{trip.pickup}</span>
-                <span className="mx-2 text-stone-400">&rarr;</span>
-                <span className="text-rose-700 font-semibold">{trip.destination}</span>
-              </div>
-
-              <div className="text-[11px] text-stone-400 pl-10 flex gap-3">
-                <span>Trip: {trip.distanceKm} km</span>
-                <span>&bull;</span>
-                <span>Gross Fare: ৳{trip.grossFare}.00</span>
-                <span>&bull;</span>
-                <span>10% Platform Cut: -৳{Math.round(trip.grossFare * 0.1)}.00</span>
-              </div>
-            </div>
-
-            <div className="text-left md:text-right border-t md:border-t-0 border-stone-200 pt-2 md:pt-0 shrink-0">
-              <span className="text-[10px] text-emerald-700 font-bold uppercase block">
-                Net Deposited
-              </span>
-              <div className="text-2xl font-black text-emerald-700">
-                + ৳{trip.netEarnings}.00
-              </div>
-              <span className="text-[10px] text-stone-400">
-                Payment Captured ✓
-              </span>
-            </div>
+      {/* Trip List or Clean Empty State */}
+      {allTrips.length === 0 ? (
+        <div className="bg-white border border-stone-200/80 rounded-3xl p-10 sm:p-14 text-center shadow-xs space-y-4">
+          <div className="w-16 h-16 rounded-full bg-stone-100 border border-stone-200 text-3xl flex items-center justify-center mx-auto shadow-inner">
+            📜
           </div>
-        ))}
-      </div>
+          <div>
+            <h3 className="text-xl font-bold text-[#292524]">
+              No completed rides yet
+            </h3>
+            <p className="text-xs sm:text-sm text-stone-500 max-w-md mx-auto mt-1">
+              Go online from the Available Requests tab to receive nearby ride
+              offers. Your completed trip logs and 90% net earnings will appear
+              here.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {allTrips.map((trip, idx) => (
+            <div
+              key={trip.id + idx}
+              className="bg-white border border-stone-200/80 rounded-2xl p-5 shadow-xs hover:border-stone-300 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center text-sm">
+                    {trip.vehicleType === "BIKE" ? "🏍️" : "🚗"}
+                  </span>
+                  <span className="font-bold text-[#292524] text-sm">
+                    Passenger: {trip.customerName}
+                  </span>
+                  <span className="text-xs text-stone-600 font-semibold flex items-center gap-0.5">
+                    <span className="text-amber-500">★</span>{" "}
+                    {trip.customerRating}
+                  </span>
+                </div>
+
+                <div className="text-xs text-stone-600 pl-10">
+                  <span className="text-emerald-700 font-semibold">
+                    {trip.pickup}
+                  </span>
+                  <span className="mx-2 text-stone-400">&rarr;</span>
+                  <span className="text-rose-700 font-semibold">
+                    {trip.destination}
+                  </span>
+                </div>
+
+                <div className="text-[11px] text-stone-400 pl-10 flex gap-3">
+                  <span>Trip: {trip.distanceKm} km</span>
+                  <span>&bull;</span>
+                  <span>Gross Fare: ${Number(trip.grossFare).toFixed(2)}</span>
+                  <span>&bull;</span>
+                  <span>
+                    10% Platform Cut: -${(Number(trip.grossFare) * 0.1).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="text-left md:text-right border-t md:border-t-0 border-stone-200 pt-2 md:pt-0 shrink-0">
+                <span className="text-[10px] text-emerald-700 font-bold uppercase block">
+                  Net Deposited
+                </span>
+                <div className="text-2xl font-black text-emerald-700">
+                  + ${Number(trip.netEarnings).toFixed(2)}
+                </div>
+                <span className="text-[10px] text-stone-400">
+                  Payment Captured ✓
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
