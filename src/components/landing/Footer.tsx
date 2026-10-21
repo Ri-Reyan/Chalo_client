@@ -28,7 +28,7 @@ export const Footer: React.FC = () => {
         {/* Subtle decorative inner ambient glow */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#FFB7B2]/10 rounded-full blur-[100px]"
+          className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-75 bg-[#FFB7B2]/10 rounded-full blur-[100px]"
         />
 
         <div className="relative z-10 max-w-xl mx-auto flex flex-col items-center text-center">
@@ -39,14 +39,14 @@ export const Footer: React.FC = () => {
 
           <h3 className="text-3xl sm:text-4xl font-bold tracking-tight text-white leading-tight">
             Join our{" "}
-            <span className="font-handwriting text-[#FF9E98] text-4xl sm:text-5xl font-normal inline-block -rotate-2">
+            <span className="font-handwriting text-[#FF9E98] text-4xl sm:text-5xl font-normal inline-block -rotate-3 transition-transform hover:rotate-0 duration-300 cursor-default">
               community
             </span>
           </h3>
 
           <p className="mt-3 text-sm sm:text-base text-stone-400 max-w-md leading-relaxed">
-            Get early access to expanded coverage areas, seasonal fare perks, and
-            transparent updates on fair mobility.
+            Get early access to expanded coverage areas, seasonal fare perks,
+            and transparent updates on fair mobility.
           </p>
 
           {/* Waitlist Subscription Form */}
@@ -54,7 +54,9 @@ export const Footer: React.FC = () => {
             {isSubscribed ? (
               <div className="bg-emerald-950/60 border border-emerald-500/40 rounded-full px-6 py-3.5 text-emerald-400 text-sm font-semibold flex items-center justify-center gap-2 animate-in fade-in duration-300">
                 <span className="text-base">✓</span>
-                <span>Check your email! You&apos;re now on the early VIP list.</span>
+                <span>
+                  Check your email! You&apos;re now on the early VIP list.
+                </span>
               </div>
             ) : (
               <form
@@ -100,8 +102,8 @@ export const Footer: React.FC = () => {
               </span>
             </Link>
             <p className="text-xs sm:text-sm text-stone-400 leading-relaxed">
-              Chalo is the future of calm, transparent urban mobility. Built
-              to guarantee fair earnings for drivers and honest, zero-surge rides
+              Chalo is the future of calm, transparent urban mobility. Built to
+              guarantee fair earnings for drivers and honest, zero-surge rides
               for passengers.
             </p>
             <div className="pt-2 text-xs text-stone-400 flex items-center gap-2">
@@ -130,12 +132,18 @@ export const Footer: React.FC = () => {
                 </a>
               </li>
               <li>
-                <a href="#problem" className="hover:text-white transition-colors">
+                <a
+                  href="#problem"
+                  className="hover:text-white transition-colors"
+                >
                   Zero Surge Guarantee
                 </a>
               </li>
               <li>
-                <a href="#how-it-works" className="hover:text-white transition-colors">
+                <a
+                  href="#how-it-works"
+                  className="hover:text-white transition-colors"
+                >
                   Safety & SOS Shield
                 </a>
               </li>
@@ -165,7 +173,10 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <a href="#solution" className="hover:text-white transition-colors">
+                <a
+                  href="#solution"
+                  className="hover:text-white transition-colors"
+                >
                   10% Flat Platform Cut
                 </a>
               </li>
@@ -175,7 +186,10 @@ export const Footer: React.FC = () => {
                 </a>
               </li>
               <li>
-                <a href="#how-it-works" className="hover:text-white transition-colors">
+                <a
+                  href="#how-it-works"
+                  className="hover:text-white transition-colors"
+                >
                   Requirements & Verification
                 </a>
               </li>
@@ -202,7 +216,10 @@ export const Footer: React.FC = () => {
                 </a>
               </li>
               <li>
-                <a href="mailto:support@chalo.app" className="hover:text-white transition-colors">
+                <a
+                  href="mailto:support@chalo.app"
+                  className="hover:text-white transition-colors"
+                >
                   24/7 Safety Dispatch Desk
                 </a>
               </li>
@@ -252,7 +269,8 @@ export const Footer: React.FC = () => {
         {/* 3. Bottom Legal & Copyright Bar (12px, centered bottom, opacity 0.6) */}
         <div className="mt-16 pt-8 border-t border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
           <div>
-            &copy; 2026 Chalo Technologies Inc. Built for dignified urban transit.
+            &copy; 2026 Chalo Technologies Inc. Built for dignified urban
+            transit.
           </div>
           <div className="flex items-center gap-6">
             <span className="hover:text-stone-400 cursor-pointer transition-colors">

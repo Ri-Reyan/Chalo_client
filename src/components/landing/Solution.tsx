@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 
 interface FeatureCard {
@@ -64,6 +64,235 @@ const features: FeatureCard[] = [
 
 export const Solution: React.FC = () => {
   const [activeFeature, setActiveFeature] = useState(0);
+  const [mobileSlide, setMobileSlide] = useState(1); // Default to Center Phone
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  // Initialize mobile carousel centered on Slide 1 (Center Phone)
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return;
+
+    const scrollToCenter = () => {
+      const slideWidth = el.clientWidth; // Full container width for single active card view
+      el.scrollTo({
+        left: slideWidth * 1, // Index 1 is the center phone
+        behavior: "smooth",
+      });
+    };
+
+    const timer = setTimeout(scrollToCenter, 150);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleMobileScroll = () => {
+    const el = carouselRef.current;
+    if (!el) return;
+    const scrollLeft = el.scrollLeft;
+    const itemWidth = el.clientWidth;
+    const current = Math.round(scrollLeft / itemWidth);
+    setMobileSlide(Math.min(Math.max(current, 0), 2));
+  };
+
+  const scrollToSlide = (idx: number) => {
+    const el = carouselRef.current;
+    if (!el) return;
+    const itemWidth = el.clientWidth;
+    el.scrollTo({
+      left: itemWidth * idx,
+      behavior: "smooth",
+    });
+    setMobileSlide(idx);
+  };
+
+  /* Reusable Phone Component 1: Upfront Fare & Booking */
+  const renderLeftPhone = (isMobile = false) => (
+    <div
+      className={`${
+        isMobile
+          ? "w-70 sm:w-75 h-135 shrink-0 snap-center rounded-[2.6rem] bg-white border-[3px] border-[#292524] shadow-2xl overflow-hidden transition-all duration-300 mx-auto"
+          : "hidden md:block absolute left-4 lg:left-12 top-12 w-67.5 h-135 rounded-[2.5rem] bg-white border-[2.5px] border-[#292524] shadow-xl opacity-85 transition-transform duration-500 hover:opacity-100 hover:scale-105 hover:z-20 -rotate-3 overflow-hidden"
+      }`}
+      style={
+        !isMobile ? { transform: "translateY(36px) rotate(-3deg)" } : undefined
+      }
+    >
+      <div className="w-24 h-4 bg-[#292524] rounded-full mx-auto mt-2.5 mb-3" />
+      <div className="h-full bg-[#E8EFE8]/70 p-4 flex flex-col justify-between pb-10">
+        <div>
+          <div className="flex items-center justify-between text-xs font-bold text-[#292524] mb-3">
+            <span>9:41 AM</span>
+            <span>5G • 100%</span>
+          </div>
+          <div className="bg-white/90 rounded-2xl p-3 border border-stone-200/60 shadow-xs mb-3">
+            <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">
+              Guaranteed Upfront Fare
+            </span>
+            <div className="text-xl font-bold text-[#292524] mt-0.5">
+              ৳185.00
+            </div>
+            <div className="text-[11px] text-[#78716C]">
+              Dhanmondi → Gulshan 1 (8.4 km)
+            </div>
+          </div>
+          <div className="bg-white/80 rounded-2xl p-3 border border-stone-200/50 space-y-1.5 text-xs">
+            <div className="flex justify-between text-[#78716C]">
+              <span>Base Fare</span>
+              <span className="font-semibold text-[#292524]">৳40.00</span>
+            </div>
+            <div className="flex justify-between text-[#78716C]">
+              <span>Distance (8.4km × ৳15)</span>
+              <span className="font-semibold text-[#292524]">৳126.00</span>
+            </div>
+            <div className="flex justify-between text-[#78716C]">
+              <span>Service Fee</span>
+              <span className="font-semibold text-[#292524]">৳19.00</span>
+            </div>
+            <div className="border-t border-stone-200 pt-1.5 flex justify-between font-bold text-emerald-700">
+              <span>Surge Multiplier</span>
+              <span>0.0x (Free)</span>
+            </div>
+          </div>
+        </div>
+        <div className="w-full py-2.5 rounded-full bg-[#292524] text-white text-center text-xs font-semibold shadow-xs">
+          Confirm Pickup Spot
+        </div>
+      </div>
+    </div>
+  );
+
+  /* Reusable Phone Component 2: Main Live Tracking */
+  const renderCenterPhone = (isMobile = false) => (
+    <div
+      className={`${
+        isMobile
+          ? "w-70 sm:w-75 h-135 shrink-0 snap-center rounded-[2.6rem] bg-white border-[3px] border-[#292524] shadow-2xl overflow-hidden transition-all duration-300 mx-auto"
+          : "relative z-10 w-75 sm:w-[320px] h-145 sm:h-155 rounded-[2.8rem] bg-white border-[3px] border-[#292524] shadow-2xl overflow-hidden animate-float-slow"
+      }`}
+    >
+      <div className="w-28 h-5 bg-[#292524] rounded-full mx-auto mt-2.5 mb-2 shadow-xs" />
+      <div className="h-full bg-linear-to-b from-[#FFF5F4] to-[#FFE4E1] p-4 sm:p-5 flex flex-col justify-between pb-12">
+        <div>
+          <div className="flex items-center justify-between text-xs font-bold text-[#292524] mb-3">
+            <span>9:42 AM</span>
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-[#4caf50]" />
+              Live GPS
+            </span>
+          </div>
+
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl p-3.5 border border-[#FFB7B2]/60 shadow-sm mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#FFB7B2] flex items-center justify-center font-bold text-sm text-[#292524] shadow-xs">
+                RA
+              </div>
+              <div className="flex-1">
+                <div className="text-sm font-bold text-[#292524]">
+                  Rafiqul Alam
+                </div>
+                <div className="text-xs text-[#78716C]">
+                  Honda CB 150 • 4.9 ★ (1,420 trips)
+                </div>
+              </div>
+            </div>
+            <div className="mt-2 pt-2 border-t border-stone-100 flex items-center justify-between text-xs">
+              <span className="font-semibold text-emerald-700">
+                ⚡ Arriving in 2.1 mins
+              </span>
+              <span className="text-[#78716C]">0.6 km away</span>
+            </div>
+          </div>
+
+          <div className="relative h-40 sm:h-44 rounded-2xl bg-stone-100 border border-stone-200 overflow-hidden shadow-inner flex items-center justify-center">
+            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#292524_1px,transparent_1px)] bg-size-[12px_12px]" />
+            <svg className="absolute inset-0 w-full h-full">
+              <path
+                d="M 50 120 Q 130 60 230 40"
+                fill="none"
+                stroke="#FF9E98"
+                strokeWidth="4"
+                strokeDasharray="6,4"
+              />
+            </svg>
+            <div className="absolute left-10 bottom-6 flex flex-col items-center">
+              <div className="w-6 h-6 rounded-full bg-emerald-500 border-2 border-white shadow-md flex items-center justify-center text-white text-[10px] font-bold">
+                P
+              </div>
+              <span className="text-[9px] font-bold bg-white/90 px-1.5 rounded shadow-2xs mt-0.5">
+                You
+              </span>
+            </div>
+            <div className="absolute right-12 top-7 flex flex-col items-center animate-bounce">
+              <div className="w-7 h-7 rounded-full bg-[#292524] border-2 border-[#FFB7B2] shadow-md flex items-center justify-center text-white text-xs">
+                🏍️
+              </div>
+              <span className="text-[9px] font-bold bg-[#FFB7B2] text-[#292524] px-1.5 rounded shadow-2xs mt-0.5">
+                2 min
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center gap-2 pt-2">
+          <div className="w-full py-3 sm:py-3.5 rounded-full bg-[#292524] text-white text-center text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-md animate-pulse-subtle">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#FFB7B2] animate-ping" />
+            <span>Breathe • Your driver is on the way</span>
+          </div>
+          <span className="text-[10px] text-[#78716C] text-center">
+            Trip OTP: <strong className="text-[#292524]">4892</strong> •
+            Verified Partner
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
+  /* Reusable Phone Component 3: Driver Earnings & Instant Payout */
+  const renderRightPhone = (isMobile = false) => (
+    <div
+      className={`${
+        isMobile
+          ? "w-70 sm:w-75 h-135 shrink-0 snap-center rounded-[2.6rem] bg-white border-[3px] border-[#292524] shadow-2xl overflow-hidden transition-all duration-300 mx-auto"
+          : "hidden md:block absolute right-4 lg:right-12 top-16 w-67.5 h-135 rounded-[2.5rem] bg-white border-[2.5px] border-[#292524] shadow-xl opacity-85 transition-transform duration-500 hover:opacity-100 hover:scale-105 hover:z-20 rotate-3 overflow-hidden"
+      }`}
+      style={
+        !isMobile ? { transform: "translateY(56px) rotate(3deg)" } : undefined
+      }
+    >
+      <div className="w-24 h-4 bg-[#292524] rounded-full mx-auto mt-2.5 mb-3" />
+      <div className="h-full bg-[#EFEDF4]/70 p-4 flex flex-col justify-between pb-10">
+        <div>
+          <div className="flex items-center justify-between text-xs font-bold text-[#292524] mb-3">
+            <span>9:41 AM</span>
+            <span className="text-emerald-700 font-bold">Online 🟢</span>
+          </div>
+          <div className="bg-white/90 rounded-2xl p-3 border border-stone-200/60 shadow-xs mb-3">
+            <span className="text-[10px] font-bold text-indigo-900 uppercase tracking-wider">
+              Today&apos;s Earnings
+            </span>
+            <div className="text-2xl font-bold text-[#292524] mt-0.5">
+              ৳1,850.00
+            </div>
+            <div className="text-[11px] text-[#78716C]">
+              9 Completed Rides • 10% Flat Cut
+            </div>
+          </div>
+          <div className="bg-white/80 rounded-2xl p-3 border border-stone-200/50 space-y-2 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-[#78716C]">Available Balance</span>
+              <span className="font-bold text-[#292524]">৳1,850.00</span>
+            </div>
+            <div className="flex items-center justify-between text-emerald-700 font-medium">
+              <span>Instant bKash/Bank</span>
+              <span>✓ Ready</span>
+            </div>
+          </div>
+        </div>
+        <div className="w-full py-2.5 rounded-full bg-emerald-700 text-white text-center text-xs font-semibold shadow-xs">
+          Withdraw to bKash (0 Fees)
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <section
@@ -78,7 +307,7 @@ export const Solution: React.FC = () => {
 
       <div className="max-w-6xl mx-auto">
         {/* Section Header */}
-        <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-20">
+        <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-stone-200/80 shadow-2xs mb-4">
             <span className="w-2 h-2 rounded-full bg-[#4caf50]" />
             <span className="text-xs font-semibold tracking-wider uppercase text-[#78716C]">
@@ -100,199 +329,64 @@ export const Solution: React.FC = () => {
           </p>
         </div>
 
-        {/* 3-Phone Cascade App Preview (As specified in design_spec.md) */}
-        <div className="relative py-10 mb-24 flex items-center justify-center">
+        {/* 1. Mobile Screen Horizontal Snap-Scroll Carousel (md:hidden) - One active display at a time */}
+        <div className="md:hidden mb-20">
+          <div className="text-center mb-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#78716C] bg-white border border-stone-200/80 px-3 py-1 rounded-full shadow-2xs">
+              ← Swipe sideways to switch screens →
+            </span>
+          </div>
+
+          <div
+            ref={carouselRef}
+            onScroll={handleMobileScroll}
+            className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth py-6 px-4 gap-0 items-center no-scrollbar w-full"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {/* Phone 1 */}
+            <div className="w-full min-w-full snap-center flex justify-center px-4">
+              {renderLeftPhone(true)}
+            </div>
+            {/* Phone 2 */}
+            <div className="w-full min-w-full snap-center flex justify-center px-4">
+              {renderCenterPhone(true)}
+            </div>
+            {/* Phone 3 */}
+            <div className="w-full min-w-full snap-center flex justify-center px-4">
+              {renderRightPhone(true)}
+            </div>
+          </div>
+
+          {/* Interactive Pagination Indicators on Mobile */}
+          <div className="flex items-center justify-center gap-2 mt-4">
+            {[
+              { label: "Upfront Fare", icon: "💰" },
+              { label: "Live Tracking", icon: "🗺️" },
+              { label: "Driver Earnings", icon: "💳" },
+            ].map((item, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => scrollToSlide(idx)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                  mobileSlide === idx
+                    ? "bg-[#292524] text-white shadow-xs scale-105"
+                    : "bg-white text-[#78716C] border border-stone-200/80 hover:bg-stone-50"
+                }`}
+              >
+                <span>{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 2. Desktop 3-Phone Cascade App Preview (hidden on mobile, visible md:flex) */}
+        <div className="hidden md:flex relative py-10 mb-24 items-center justify-center">
           <div className="relative w-full max-w-4xl flex items-center justify-center min-h-145 sm:min-h-160">
-            {/* Left Phone: Sage #E8EFE8 screen - Upfront Fare & Booking (80% opacity, translateY +48px) */}
-            <div
-              className="hidden md:block absolute left-4 lg:left-12 top-12 w-67.5 h-135 rounded-[2.5rem] bg-white border-[2.5px] border-[#292524] shadow-xl opacity-85 transition-transform duration-500 hover:opacity-100 hover:scale-105 hover:z-20 -rotate-3 overflow-hidden"
-              style={{ transform: "translateY(36px) rotate(-3deg)" }}
-            >
-              {/* Speaker / Dynamic Island */}
-              <div className="w-24 h-4 bg-[#292524] rounded-full mx-auto mt-2.5 mb-3" />
-              {/* Screen Content: Sage Screen */}
-              <div className="h-full bg-[#E8EFE8]/70 p-4 flex flex-col justify-between pb-10">
-                <div>
-                  <div className="flex items-center justify-between text-xs font-bold text-[#292524] mb-3">
-                    <span>9:41 AM</span>
-                    <span>5G • 100%</span>
-                  </div>
-                  <div className="bg-white/90 rounded-2xl p-3 border border-stone-200/60 shadow-xs mb-3">
-                    <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">
-                      Guaranteed Upfront Fare
-                    </span>
-                    <div className="text-xl font-bold text-[#292524] mt-0.5">
-                      ৳185.00
-                    </div>
-                    <div className="text-[11px] text-[#78716C]">
-                      Dhanmondi → Gulshan 1 (8.4 km)
-                    </div>
-                  </div>
-                  <div className="bg-white/80 rounded-2xl p-3 border border-stone-200/50 space-y-1.5 text-xs">
-                    <div className="flex justify-between text-[#78716C]">
-                      <span>Base Fare</span>
-                      <span className="font-semibold text-[#292524]">
-                        ৳40.00
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-[#78716C]">
-                      <span>Distance (8.4km × ৳15)</span>
-                      <span className="font-semibold text-[#292524]">
-                        ৳126.00
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-[#78716C]">
-                      <span>Service Fee</span>
-                      <span className="font-semibold text-[#292524]">
-                        ৳19.00
-                      </span>
-                    </div>
-                    <div className="border-t border-stone-200 pt-1.5 flex justify-between font-bold text-emerald-700">
-                      <span>Surge Multiplier</span>
-                      <span>0.0x (Free)</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="w-full py-2.5 rounded-full bg-[#292524] text-white text-center text-xs font-semibold">
-                  Confirm Pickup Spot
-                </div>
-              </div>
-            </div>
-
-            {/* Center Phone: Main Stage (Coral #FFB7B2 screen with Breathe pulse button) */}
-            <div className="relative z-10 w-75 sm:w-[320px] h-145 sm:h-155 rounded-[2.8rem] bg-white border-[3px] border-[#292524] shadow-2xl overflow-hidden animate-float-slow">
-              {/* Speaker / Dynamic Island */}
-              <div className="w-28 h-5 bg-[#292524] rounded-full mx-auto mt-2.5 mb-2 shadow-xs" />
-
-              {/* Screen Content */}
-              <div className="h-full bg-linear-to-b from-[#FFF5F4] to-[#FFE4E1] p-4 sm:p-5 flex flex-col justify-between pb-12">
-                {/* Header info */}
-                <div>
-                  <div className="flex items-center justify-between text-xs font-bold text-[#292524] mb-3">
-                    <span>9:42 AM</span>
-                    <span className="flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-[#4caf50]" />
-                      Live GPS
-                    </span>
-                  </div>
-
-                  {/* Driver matching notification */}
-                  <div className="bg-white/95 backdrop-blur-md rounded-2xl p-3.5 border border-[#FFB7B2]/60 shadow-sm mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-[#FFB7B2] flex items-center justify-center font-bold text-sm text-[#292524] shadow-xs">
-                        RA
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-bold text-[#292524]">
-                          Rafiqul Alam
-                        </div>
-                        <div className="text-xs text-[#78716C]">
-                          Honda CB 150 • 4.9 ★ (1,420 trips)
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-2.5 pt-2 border-t border-stone-100 flex items-center justify-between text-xs">
-                      <span className="font-semibold text-emerald-700">
-                        ⚡ Arriving in 2.1 mins
-                      </span>
-                      <span className="text-[#78716C]">0.6 km away</span>
-                    </div>
-                  </div>
-
-                  {/* Mini Map View Representation */}
-                  <div className="relative h-44 rounded-2xl bg-stone-100 border border-stone-200 overflow-hidden shadow-inner flex items-center justify-center">
-                    {/* Simulated Map Grid */}
-                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#292524_1px,transparent_1px)] bg-size-[12px_12px]" />
-                    {/* Route line */}
-                    <svg className="absolute inset-0 w-full h-full">
-                      <path
-                        d="M 60 130 Q 140 70 240 50"
-                        fill="none"
-                        stroke="#FF9E98"
-                        strokeWidth="4"
-                        strokeDasharray="6,4"
-                      />
-                    </svg>
-                    {/* Pickup Pin */}
-                    <div className="absolute left-12 bottom-8 flex flex-col items-center">
-                      <div className="w-6 h-6 rounded-full bg-emerald-500 border-2 border-white shadow-md flex items-center justify-center text-white text-[10px] font-bold">
-                        P
-                      </div>
-                      <span className="text-[9px] font-bold bg-white/90 px-1.5 rounded shadow-2xs mt-0.5">
-                        You
-                      </span>
-                    </div>
-                    {/* Driver Marker */}
-                    <div className="absolute right-14 top-9 flex flex-col items-center animate-bounce">
-                      <div className="w-7 h-7 rounded-full bg-[#292524] border-2 border-[#FFB7B2] shadow-md flex items-center justify-center text-white text-xs">
-                        🏍️
-                      </div>
-                      <span className="text-[9px] font-bold bg-[#FFB7B2] text-[#292524] px-1.5 rounded shadow-2xs mt-0.5">
-                        2 min
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* "Breathe" animated pulse button as specified */}
-                <div className="flex flex-col items-center gap-2 pt-2">
-                  <div className="w-full py-3.5 rounded-full bg-[#292524] text-white text-center text-sm font-semibold flex items-center justify-center gap-2 shadow-md animate-pulse-subtle">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#FFB7B2] animate-ping" />
-                    <span>Breathe • Your driver is on the way</span>
-                  </div>
-                  <span className="text-[10px] text-[#78716C] text-center">
-                    Trip OTP: <strong className="text-[#292524]">4892</strong> •
-                    Verified Driver Partner
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Phone: Lavender #EFEDF4 screen - Driver Earnings & Instant Payout (80% opacity, translateY +96px) */}
-            <div
-              className="hidden md:block absolute right-4 lg:right-12 top-16 w-67.5 h-135 rounded-[2.5rem] bg-white border-[2.5px] border-[#292524] shadow-xl opacity-85 transition-transform duration-500 hover:opacity-100 hover:scale-105 hover:z-20 rotate-3 overflow-hidden"
-              style={{ transform: "translateY(56px) rotate(3deg)" }}
-            >
-              {/* Speaker / Dynamic Island */}
-              <div className="w-24 h-4 bg-[#292524] rounded-full mx-auto mt-2.5 mb-3" />
-              {/* Screen Content: Lavender Screen */}
-              <div className="h-full bg-[#EFEDF4]/70 p-4 flex flex-col justify-between pb-10">
-                <div>
-                  <div className="flex items-center justify-between text-xs font-bold text-[#292524] mb-3">
-                    <span>9:41 AM</span>
-                    <span className="text-emerald-700 font-bold">
-                      Online 🟢
-                    </span>
-                  </div>
-                  <div className="bg-white/90 rounded-2xl p-3 border border-stone-200/60 shadow-xs mb-3">
-                    <span className="text-[10px] font-bold text-indigo-900 uppercase tracking-wider">
-                      Today&apos;s Earnings
-                    </span>
-                    <div className="text-2xl font-bold text-[#292524] mt-0.5">
-                      ৳1,850.00
-                    </div>
-                    <div className="text-[11px] text-[#78716C]">
-                      9 Completed Rides • 10% Flat Cut
-                    </div>
-                  </div>
-                  <div className="bg-white/80 rounded-2xl p-3 border border-stone-200/50 space-y-2 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[#78716C]">Available Balance</span>
-                      <span className="font-bold text-[#292524]">
-                        ৳1,850.00
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-emerald-700 font-medium">
-                      <span>Instant bKash/Bank</span>
-                      <span>✓ Ready</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="w-full py-2.5 rounded-full bg-emerald-700 text-white text-center text-xs font-semibold shadow-xs">
-                  Withdraw to bKash (0 Fees)
-                </div>
-              </div>
-            </div>
+            {renderLeftPhone(false)}
+            {renderCenterPhone(false)}
+            {renderRightPhone(false)}
           </div>
         </div>
 
@@ -341,7 +435,6 @@ export const Solution: React.FC = () => {
 
         {/* Value Proposition CTA Banner */}
         <div className="relative bg-linear-to-br from-[#292524] to-[#1c1917] rounded-[2.5rem] p-8 sm:p-14 text-white overflow-hidden shadow-2xl">
-          {/* Ambient inner glow */}
           <div
             aria-hidden="true"
             className="pointer-events-none absolute -bottom-10 -right-10 w-96 h-96 bg-[#FFB7B2]/20 rounded-full blur-3xl"
