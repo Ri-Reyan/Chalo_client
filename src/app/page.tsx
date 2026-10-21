@@ -6,6 +6,7 @@ import ProblemStatement from "@/components/landing/ProblemStatement";
 import Solution from "@/components/landing/Solution";
 import HowItWorks from "@/components/landing/HowItWorks";
 import FAQ from "@/components/landing/FAQ";
+import Footer from "@/components/landing/Footer";
 
 export default function Home() {
   return (
@@ -33,6 +34,9 @@ export default function Home() {
         {/* 7. FAQs Section */}
         <FAQ />
       </main>
+
+      {/* 8. Footer with CTA */}
+      <Footer />
     </div>
   );
 }
