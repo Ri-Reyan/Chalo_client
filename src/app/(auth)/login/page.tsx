@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [role, setRole] = useState<"CUSTOMER" | "DRIVER">( "CUSTOMER");
+  const [role, setRole] = useState<"CUSTOMER" | "DRIVER">("CUSTOMER");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -66,7 +66,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full max-w-[460px] mx-auto animate-in fade-in duration-300">
+    <div className="w-full ax-w-115 mx-auto animate-in fade-in duration-300">
       {/* Auth Card */}
       <div className="bg-[#9a2121] border border-[#c8833b] rounded-3xl p-7 sm:p-9 shadow-2xl">
         {/* Role Switcher Tabs */}
@@ -217,7 +217,9 @@ export default function LoginPage() {
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-stone-900 border-t-transparent rounded-full animate-spin" />
             ) : (
-              <span>Sign In as {role === "CUSTOMER" ? "Customer" : "Driver"} →</span>
+              <span>
+                Sign In as {role === "CUSTOMER" ? "Customer" : "Driver"} →
+              </span>
             )}
           </button>
         </form>

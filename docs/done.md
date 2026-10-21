@@ -65,11 +65,11 @@
 ---
 
 ## 4. Customer Dashboard (`/dashboard/customer`)
-- [ ] Customer Layout with responsive sidebar (Request Ride, Ongoing Ride, Ride History, Profile, Sign Out)
-- [ ] Request Ride View (Interactive pickup/destination selection, vehicle type: Bike vs Car, distance & fare calculation)
-- [ ] Live Ride Tracking Screen (Simulated driver map movement, ETA counter, driver info card, Call/Cancel/SOS buttons)
-- [ ] Ride History View with detailed receipts and payment status
-- [ ] Customer Profile & Saved Places
+- [x] Customer Layout with responsive sidebar (Request Ride, Ongoing Ride, Ride History, Profile, Sign Out)
+- [x] Request Ride View (Interactive pickup/destination selection, vehicle type: Bike vs Car, distance & fare calculation)
+- [x] Live Ride Tracking Screen (Simulated driver map movement, ETA counter, driver info card, Call/Cancel/SOS buttons)
+- [x] Ride History View with detailed receipts and payment status
+- [x] Customer Profile & Saved Places
 
 ---
 

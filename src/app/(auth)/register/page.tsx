@@ -92,7 +92,7 @@ function RegisterContent() {
   };
 
   return (
-    <div className="w-full max-w-[460px] mx-auto animate-in fade-in duration-300">
+    <div className="w-full max-w-115 mx-auto animate-in fade-in duration-300">
       <div className="bg-[#9a2121] border border-[#c8833b] rounded-3xl p-7 sm:p-9 shadow-2xl">
         {/* Role Switcher Tabs */}
         <div className="flex bg-[#6f1b1b] p-1.5 rounded-2xl mb-6 border border-[#c8833b]/40">
