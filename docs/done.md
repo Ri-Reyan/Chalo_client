@@ -74,16 +74,16 @@
 ---
 
 ## 5. Driver Dashboard (`/dashboard/driver`)
-- [ ] Driver Layout with sidebar, earnings summary card, and Online/Offline availability toggle
-- [ ] Available Requests View (Real-time incoming request card with 30s countdown, route info, estimated fare, Accept/Decline)
-- [ ] Ongoing Ride & Route Tracking (Interactive step machine: En route -> Arrived -> In transit -> Completed)
-- [ ] Driver Wallet & Withdrawal Screen (Current balance, payout request modal, transaction history)
-- [ ] Driver Ride History & Daily Statistics
-- [ ] Driver Profile & Vehicle Info
+- [x] Driver Layout with sidebar, earnings summary card, and Online/Offline availability toggle
+- [x] Available Requests View (Real-time incoming request card with 30s countdown, route info, estimated fare, Accept/Decline)
+- [x] Ongoing Ride & Route Tracking (Interactive step machine: En route -> Arrived -> In transit -> Completed)
+- [x] Driver Wallet & Withdrawal Screen (Current balance, payout request modal, transaction history)
+- [x] Driver Ride History & Daily Statistics
+- [x] Driver Profile & Vehicle Info
 
 ---
 
 ## 6. End-to-End Polish & Verification
-- [ ] Responsive testing across mobile (375px), tablet (768px), and desktop (1280px+)
-- [ ] Local storage state persistence for seamless cross-page prototype testing
-- [ ] Next.js production build (`next build`) zero-error validation
+- [x] Responsive testing across mobile (375px), tablet (768px), and desktop (1280px+)
+- [x] Local storage state persistence for seamless cross-page prototype testing
+- [x] Next.js production build (`next build`) zero-error validation
