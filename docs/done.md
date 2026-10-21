@@ -29,7 +29,7 @@
   - Dual 48px pill CTA buttons: Primary Coral `#FFB7B2` ("Book a Ride") and Secondary Stone border ("Drive with Us")
   - Social proof trust badges (e.g., "⚡ 2.4 min avg pickup", "⭐ 4.9/5 satisfaction rating", "🛡️ 100% Vetted Drivers")
   - Interactive Instant Fare Calculator preview widget
-- [ ] **Section 3: Social Proof / Stats**
+- [x] **Section 3: Social Proof / Stats**
   - Impact metrics counter grid (Completed rides, active drivers, average rating, coverage cities)
   - Horizontal/grid cards with subtle rotation, sticky-note aesthetic, and cursive signatures
 - [ ] **Section 4: Problem Statement**
