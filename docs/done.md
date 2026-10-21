@@ -39,7 +39,7 @@
   - Interactive feature highlights (fair pricing, guaranteed pickups, driver welfare)
   - 3-Phone Cascade App Preview with floating animations
   - Live Interactive Fare Estimate preview widget
-- [ ] **Section 6: How It Works**
+- [x] **Section 6: How It Works**
   - Visual step-by-step guide for Riders (Set pickup -> Match driver -> Track live -> Arrive safely)
   - Tab switch for Drivers (Go online -> Accept request -> Pick up rider -> Get paid instantly)
 - [ ] **Section 7: FAQs Section**

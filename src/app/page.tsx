@@ -4,6 +4,7 @@ import Hero from "@/components/landing/Hero";
 import SocialProof from "@/components/landing/SocialProof";
 import ProblemStatement from "@/components/landing/ProblemStatement";
 import Solution from "@/components/landing/Solution";
+import HowItWorks from "@/components/landing/HowItWorks";
 
 export default function Home() {
   return (
@@ -24,6 +25,9 @@ export default function Home() {
 
         {/* 5. Solution & Value Proposition with CTA */}
         <Solution />
+
+        {/* 6. How It Works (Step-by-step guide) */}
+        <HowItWorks />
       </main>
     </div>
   );
