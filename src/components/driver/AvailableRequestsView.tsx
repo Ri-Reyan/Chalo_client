@@ -11,6 +11,10 @@ export interface DriverRideOffer {
   customerRating: string;
   pickup: string;
   destination: string;
+  pickupLat?: number;
+  pickupLng?: number;
+  destinationLat?: number;
+  destinationLng?: number;
   distanceKm: number;
   pickupDistanceKm: number;
   grossFare: number;

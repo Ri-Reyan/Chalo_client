@@ -63,15 +63,27 @@ function CustomerDashboardContent() {
     const socket = getSocket();
     const handleRideAccepted = (data: any) => {
       if (data?.driver) {
-        setActiveRide((prev) =>
-          prev
-            ? {
-                ...prev,
-                status: "ACCEPTED",
-                driver: data.driver,
-              }
-            : null,
-        );
+        setActiveRide((prev) => ({
+          id: data.rideId || prev?.id || "",
+          pickup: prev?.pickup || data.pickup || "Pickup Location",
+          destination: prev?.destination || data.destination || "Destination",
+          pickupLat: prev?.pickupLat,
+          pickupLng: prev?.pickupLng,
+          destinationLat: prev?.destinationLat,
+          destinationLng: prev?.destinationLng,
+          vehicleType: data.vehicleType || prev?.vehicleType || "BIKE",
+          distanceKm: Number(data.distanceKm) || prev?.distanceKm || 0,
+          fare: Number(data.fare) || prev?.fare || 0,
+          status: "ACCEPTED",
+          driver: data.driver,
+          createdAt:
+            prev?.createdAt ||
+            new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+        }));
+        setActiveTab("tracking");
         toast.success(
           "Driver Assigned!",
           `${data.driver.name} accepted your ride and is en route.`,
@@ -88,12 +100,23 @@ function CustomerDashboardContent() {
       setActiveTab("request");
     };
 
+    const handleRideCancelled = (data?: { message?: string }) => {
+      toast.info(
+        "Ride Cancelled",
+        data?.message || "The ride has been cancelled and held payment refunded."
+      );
+      setActiveRide(null);
+      setActiveTab("request");
+    };
+
     socket.on("ride:accepted", handleRideAccepted);
     socket.on("ride:no_driver", handleNoDriverFound);
+    socket.on("ride:cancelled", handleRideCancelled);
 
     return () => {
       socket.off("ride:accepted", handleRideAccepted);
       socket.off("ride:no_driver", handleNoDriverFound);
+      socket.off("ride:cancelled", handleRideCancelled);
     };
   }, [user]);
 

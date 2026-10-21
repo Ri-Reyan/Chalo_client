@@ -11,7 +11,10 @@ function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const rideId = searchParams.get("rideId") || "demo-ride";
+  const rideId =
+    searchParams.get("rideId") ||
+    searchParams.get("tempRideId") ||
+    "demo-ride";
   const amountStr = searchParams.get("amount") || "120";
   const amount = Number(amountStr) || 120;
   const distanceKmStr = searchParams.get("distanceKm") || "4.5";
@@ -97,7 +100,7 @@ function CheckoutContent() {
 
       // Build active ride state
       const activeRide = {
-        id: rideId,
+        id: rideData?.rideId || rideId,
         pickup,
         destination,
         vehicleType,

@@ -1,11 +1,23 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { DriverRideOffer } from "./AvailableRequestsView";
 import ConfirmModal from "@/components/common/ConfirmModal";
 import toast from "@/lib/toast";
 import api from "@/lib/axios";
 import { getSocket, joinRideRoom, leaveRideRoom } from "@/lib/socket";
+
+// Dynamically import LiveRideMap with SSR disabled for Leaflet safety
+const LiveRideMap = dynamic(() => import("@/components/common/LiveRideMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-72 rounded-2xl bg-stone-100 border border-stone-200 flex flex-col items-center justify-center text-stone-400 gap-2">
+      <div className="w-8 h-8 border-3 border-stone-300 border-t-[#FFB7B2] rounded-full animate-spin" />
+      <span className="text-xs font-semibold">Loading live navigation map...</span>
+    </div>
+  ),
+});
 
 interface DriverOngoingRideViewProps {
   ride: DriverRideOffer | null;
@@ -21,6 +33,45 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
   // 1: En Route to Pickup -> 2: Arrived / Passenger Boarding -> 3: In Transit -> 4: Completed
   const [tripStep, setTripStep] = useState<1 | 2 | 3 | 4>(1);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [driverCurrentCoords, setDriverCurrentCoords] = useState<{
+    lat: number;
+    lng: number;
+  }>({
+    lat: (ride?.pickupLat || 23.7925) - 0.004,
+    lng: (ride?.pickupLng || 90.4078) - 0.003,
+  });
+
+  // Periodically stream simulated or real GPS coordinates to customer via Socket.IO
+  useEffect(() => {
+    if (!ride) return;
+    const socket = getSocket();
+
+    const interval = setInterval(() => {
+      setDriverCurrentCoords((prev) => {
+        let targetLat = ride.pickupLat || 23.7925;
+        let targetLng = ride.pickupLng || 90.4078;
+
+        if (tripStep >= 3) {
+          targetLat = ride.destinationLat || 23.7808;
+          targetLng = ride.destinationLng || 90.4192;
+        }
+
+        const nextLat = prev.lat + (targetLat - prev.lat) * 0.15;
+        const nextLng = prev.lng + (targetLng - prev.lng) * 0.15;
+
+        // Emit real-time driver coordinates to ride room
+        socket.emit("driver:location", {
+          rideId: ride.id,
+          lat: nextLat,
+          lng: nextLng,
+        });
+
+        return { lat: nextLat, lng: nextLng };
+      });
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [ride, tripStep]);
 
   if (!ride) {
     return (
@@ -144,40 +195,31 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
             </span>
           </div>
 
-          {/* Map Surface */}
-          <div className="relative h-72 rounded-2xl bg-[#F7F6F0] border border-stone-200 overflow-hidden shadow-inner flex items-center justify-center">
-            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#292524_1px,transparent_1px)] bg-size-[18px_18px]" />
-
-            {/* Turn-by-Turn Route Line */}
-            <svg className="absolute inset-0 w-full h-full">
-              <path
-                d="M 50 220 Q 180 120 320 60"
-                fill="none"
-                stroke="#FF9E98"
-                strokeWidth="5"
-                strokeDasharray="6,4"
-              />
-            </svg>
-
-            {/* Current Position Marker */}
-            <div className="absolute left-1/3 bottom-1/3 flex flex-col items-center animate-pulse">
-              <div className="w-9 h-9 rounded-full bg-[#FFB7B2] border-2 border-[#292524] shadow-md flex items-center justify-center text-sm">
-                🏍️
-              </div>
-              <span className="text-[10px] font-bold bg-[#292524] text-white px-2 py-0.5 rounded shadow mt-1">
-                You
-              </span>
-            </div>
-
-            {/* Target Destination Marker */}
-            <div className="absolute right-14 top-10 flex flex-col items-center">
-              <div className="w-8 h-8 rounded-full bg-emerald-600 border-2 border-white shadow-md flex items-center justify-center text-white text-xs font-bold">
-                {tripStep < 3 ? "P" : "D"}
-              </div>
-              <span className="text-[10px] font-bold bg-[#292524] text-white px-2 py-0.5 rounded shadow mt-1">
-                {tripStep < 3 ? "Pickup" : "Destination"}
-              </span>
-            </div>
+          {/* Interactive Leaflet Navigation Map Surface */}
+          <div className="relative h-72 sm:h-80 rounded-2xl overflow-hidden shadow-sm">
+            <LiveRideMap
+              pickup={
+                ride.pickupLat && ride.pickupLng
+                  ? {
+                      lat: ride.pickupLat,
+                      lng: ride.pickupLng,
+                      address: ride.pickup,
+                    }
+                  : { lat: 23.7925, lng: 90.4078, address: ride.pickup }
+              }
+              destination={
+                ride.destinationLat && ride.destinationLng
+                  ? {
+                      lat: ride.destinationLat,
+                      lng: ride.destinationLng,
+                      address: ride.destination,
+                    }
+                  : { lat: 23.7808, lng: 90.4192, address: ride.destination }
+              }
+              driver={driverCurrentCoords}
+              vehicleType={ride.vehicleType}
+              interactive={true}
+            />
           </div>
 
           {/* Turn-by-Turn Instruction Banner */}
@@ -321,12 +363,24 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
       <ConfirmModal
         isOpen={isCancelModalOpen}
         onClose={() => setIsCancelModalOpen(false)}
-        onConfirm={() => {
-          toast.info("Ride cancelled", "You cancelled the ongoing trip.");
-          onRideCancelled();
+        onConfirm={async () => {
+          setIsCancelModalOpen(false);
+          const toastId = toast.loading("Cancelling ride...", "Notifying passenger and resetting status");
+          try {
+            await api.post(`/rides/${ride.id}/cancel`);
+            toast.dismiss(toastId);
+            toast.info("Ride Cancelled", "You cancelled the ongoing trip. The customer has been refunded.");
+            onRideCancelled();
+          } catch (err: any) {
+            toast.dismiss(toastId);
+            toast.error(
+              "Cancellation Failed",
+              err?.response?.data?.message || err?.message || "Could not cancel ride"
+            );
+          }
         }}
         title="Cancel Accepted Ride?"
-        message="Are you sure you want to cancel this ride? The passenger will be notified immediately."
+        message="Are you sure you want to cancel this ride? The passenger will be notified immediately and refunded."
         confirmText="Yes, Cancel Ride"
         cancelText="Continue Trip"
         variant="danger"

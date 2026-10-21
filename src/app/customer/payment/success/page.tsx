@@ -12,6 +12,10 @@ function PaymentSuccessContent() {
 
   const sessionId = searchParams.get("session_id");
   const rideId = searchParams.get("ride_id");
+  const tempRideId =
+    searchParams.get("temp_ride_id") ||
+    searchParams.get("tempRideId") ||
+    (rideId?.startsWith("temp_") ? rideId : undefined);
 
   const [isVerifying, setIsVerifying] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -27,10 +31,23 @@ function PaymentSuccessContent() {
 
     const verifyPayment = async () => {
       try {
-        const response = await api.post("/payments/verify-session", {
+        const payload: {
+          sessionId: string;
+          rideId?: string;
+          tempRideId?: string;
+        } = {
           sessionId,
-          rideId,
-        });
+        };
+
+        if (rideId && rideId !== "null" && rideId !== "undefined") {
+          payload.rideId = rideId;
+        }
+
+        if (tempRideId && tempRideId !== "null" && tempRideId !== "undefined") {
+          payload.tempRideId = tempRideId;
+        }
+
+        const response = await api.post("/payments/verify-session", payload);
 
         if (response.data?.success) {
           const data = response.data.data;
@@ -98,7 +115,7 @@ function PaymentSuccessContent() {
     };
 
     verifyPayment();
-  }, [sessionId, rideId, router]);
+  }, [sessionId, rideId, tempRideId, router]);
 
   return (
     <div className="min-h-screen bg-[#FDFCF8] text-[#292524] flex flex-col justify-between p-4 sm:p-8 font-sans bg-grain relative overflow-hidden">

@@ -11,8 +11,13 @@ import DriverHistoryView from "@/components/driver/DriverHistoryView";
 import DriverProfileView from "@/components/driver/DriverProfileView";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/context/auth.context";
-import api from "@/lib/axios";
+import api, { getErrorMessage } from "@/lib/axios";
 import { getSocket } from "@/lib/socket";
+import toast from "@/lib/toast";
+import {
+  LocationPickerModal,
+  type SelectedLocation,
+} from "@/components/common/LocationPickerModal";
 
 function DriverDashboardContent() {
   const { user } = useAuth();
@@ -23,6 +28,12 @@ function DriverDashboardContent() {
   const [balance, setBalance] = useState<number>(() =>
     typeof user?.balance === "number" ? user.balance : 0,
   );
+  const [driverLocation, setDriverLocation] = useState<{
+    lat: number;
+    lng: number;
+    address: string;
+  } | null>(null);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
   // Fetch driver live balance and status from backend
   useEffect(() => {
@@ -41,15 +52,34 @@ function DriverDashboardContent() {
       .catch(() => {});
   }, [user]);
 
-  // Synchronize online socket room
+  // Synchronize online socket room & user channel
   useEffect(() => {
     if (!user?.id) return;
     const socket = getSocket();
+
+    // Ensure driver joins personal user room and online room
+    socket.emit("join:user", { userId: user.id, role: "DRIVER" });
+
     if (isOnline) {
       socket.emit("driver:online", { driverId: user.id });
     } else {
       socket.emit("driver:offline");
     }
+
+    const handleRemoteCancelled = (data?: { message?: string }) => {
+      toast.info(
+        "Ride Cancelled",
+        data?.message || "The passenger cancelled the ride request.",
+      );
+      setActiveRide(null);
+      setActiveTab("requests");
+    };
+
+    socket.on("ride:cancelled", handleRemoteCancelled);
+
+    return () => {
+      socket.off("ride:cancelled", handleRemoteCancelled);
+    };
   }, [user, isOnline]);
 
   const handleToggleOnline = async (nextOnline: boolean) => {
@@ -58,6 +88,31 @@ function DriverDashboardContent() {
       await api.patch("/drivers/status", { isOnline: nextOnline });
     } catch (e) {
       console.warn("Status toggle error:", e);
+    }
+  };
+
+  const handleLocationConfirmed = async (loc: SelectedLocation) => {
+    setDriverLocation({
+      lat: loc.lat,
+      lng: loc.lng,
+      address: loc.address,
+    });
+
+    const toastId = toast.loading("Updating driver location...");
+    try {
+      await api.patch("/drivers/location", {
+        lat: loc.lat,
+        lng: loc.lng,
+      });
+      toast.dismiss(toastId);
+      toast.success(
+        "Location Updated!",
+        `Ready for nearby passenger matching around ${loc.address.split(",")[0]}.`
+      );
+    } catch (err) {
+      toast.dismiss(toastId);
+      console.warn("Failed to patch driver location:", err);
+      toast.error("Location Update Failed", getErrorMessage(err));
     }
   };
 
@@ -103,6 +158,26 @@ function DriverDashboardContent() {
         driverName={driverName}
         vehicleType={vehicleType}
         balance={balance}
+        currentAddress={driverLocation?.address}
+        onOpenLocationModal={() => setIsLocationModalOpen(true)}
+      />
+
+      {/* Driver Location Setup Map Modal */}
+      <LocationPickerModal
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+        onConfirm={handleLocationConfirmed}
+        title="Set Your Current Starting Location"
+        type="driver"
+        initialLocation={
+          driverLocation
+            ? {
+                address: driverLocation.address,
+                lat: driverLocation.lat,
+                lng: driverLocation.lng,
+              }
+            : null
+        }
       />
 
       {/* Main Content Area */}

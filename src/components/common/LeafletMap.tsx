@@ -9,17 +9,26 @@ interface LeafletMapProps {
   zoom?: number;
   markerPosition: [number, number] | null;
   onLocationSelect: (lat: number, lng: number) => void;
-  markerType?: "pickup" | "destination" | "default";
+  markerType?: "pickup" | "destination" | "driver" | "default";
 }
 
-const createPinIcon = (type: "pickup" | "destination" | "default") => {
+const createPinIcon = (type: "pickup" | "destination" | "driver" | "default") => {
   const color =
     type === "pickup"
       ? "#059669"
       : type === "destination"
         ? "#e11d48"
-        : "#292524";
-  const label = type === "pickup" ? "P" : type === "destination" ? "D" : "📍";
+        : type === "driver"
+          ? "#2563eb"
+          : "#292524";
+  const label =
+    type === "pickup"
+      ? "P"
+      : type === "destination"
+        ? "D"
+        : type === "driver"
+          ? "🏍️"
+          : "📍";
 
   return L.divIcon({
     className: "custom-leaflet-pin",

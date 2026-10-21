@@ -20,6 +20,8 @@ interface DriverSidebarProps {
   driverName: string;
   vehicleType: "BIKE" | "CAR";
   balance: number;
+  currentAddress?: string;
+  onOpenLocationModal?: () => void;
 }
 
 export const DriverSidebar: React.FC<DriverSidebarProps> = ({
@@ -31,6 +33,8 @@ export const DriverSidebar: React.FC<DriverSidebarProps> = ({
   driverName,
   vehicleType,
   balance,
+  currentAddress,
+  onOpenLocationModal,
 }) => {
   const { logout } = useAuth();
 
@@ -150,6 +154,32 @@ export const DriverSidebar: React.FC<DriverSidebarProps> = ({
               ? "Ready to receive nearby customer ride requests"
               : "Toggle online to start receiving ride offers"}
           </div>
+
+          {/* Location Setup Trigger */}
+          {onOpenLocationModal && (
+            <div className="mt-2.5 pt-2 border-t border-stone-200/60">
+              <button
+                type="button"
+                onClick={onOpenLocationModal}
+                className="w-full flex items-center justify-between gap-1.5 p-2 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 text-left transition-all group"
+              >
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <span className="text-sm shrink-0">📍</span>
+                  <div className="overflow-hidden">
+                    <span className="block text-[10px] font-bold text-stone-600 uppercase tracking-wider">
+                      Starting Location
+                    </span>
+                    <span className="block text-xs font-semibold text-[#292524] truncate">
+                      {currentAddress || "Set location on map"}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold text-blue-600 group-hover:translate-x-0.5 transition-transform shrink-0">
+                  Edit &rarr;
+                </span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Navigation Items */}

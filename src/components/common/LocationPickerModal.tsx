@@ -14,7 +14,7 @@ interface LocationPickerModalProps {
   onClose: () => void;
   onConfirm: (location: SelectedLocation) => void;
   title: string;
-  type: "pickup" | "destination";
+  type: "pickup" | "destination" | "driver" | "default";
   initialLocation?: {
     address?: string;
     lat?: number;
@@ -165,10 +165,14 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
           <div className="flex items-center gap-3">
             <div
               className={`w-9 h-9 rounded-2xl flex items-center justify-center font-bold text-white shadow-xs ${
-                type === "pickup" ? "bg-emerald-600" : "bg-rose-600"
+                type === "pickup"
+                  ? "bg-emerald-600"
+                  : type === "destination"
+                    ? "bg-rose-600"
+                    : "bg-blue-600"
               }`}
             >
-              {type === "pickup" ? "P" : "D"}
+              {type === "pickup" ? "P" : type === "destination" ? "D" : "📍"}
             </div>
             <div>
               <h2 className="text-lg sm:text-xl font-extrabold text-[#292524]">

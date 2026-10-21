@@ -1,11 +1,23 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { ActiveRideState } from "./RequestRideView";
 import ConfirmModal from "@/components/common/ConfirmModal";
 import toast from "@/lib/toast";
 import api from "@/lib/axios";
 import { getSocket, joinRideRoom, leaveRideRoom } from "@/lib/socket";
+
+// Dynamically import LiveRideMap with SSR disabled for Leaflet safety
+const LiveRideMap = dynamic(() => import("@/components/common/LiveRideMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-80 rounded-2xl bg-stone-100 border border-stone-200 flex flex-col items-center justify-center text-stone-400 gap-2">
+      <div className="w-8 h-8 border-3 border-stone-300 border-t-[#FFB7B2] rounded-full animate-spin" />
+      <span className="text-xs font-semibold">Loading live journey map...</span>
+    </div>
+  ),
+});
 
 interface LiveTrackingViewProps {
   ride: ActiveRideState | null;
@@ -26,6 +38,10 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
   const [rating, setRating] = useState(5);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [journeyStatus, setJourneyStatus] = useState<string>("DRIVER_EN_ROUTE");
+  const [driverLiveCoords, setDriverLiveCoords] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   // Real-time socket room synchronization
   useEffect(() => {
@@ -46,15 +62,23 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
       setShowRatingModal(true);
     };
 
+    const handleDriverLocation = (data: { lat: number; lng: number }) => {
+      if (data?.lat && data?.lng) {
+        setDriverLiveCoords({ lat: data.lat, lng: data.lng });
+      }
+    };
+
     socket.on("driver:arrived", handleDriverArrived);
     socket.on("ride:started", handleTripStarted);
     socket.on("ride:completed", handleTripCompleted);
+    socket.on("driver:location", handleDriverLocation);
 
     return () => {
       leaveRideRoom(ride.id);
       socket.off("driver:arrived", handleDriverArrived);
       socket.off("ride:started", handleTripStarted);
       socket.off("ride:completed", handleTripCompleted);
+      socket.off("driver:location", handleDriverLocation);
     };
   }, [ride]);
 
@@ -184,68 +208,49 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
             </span>
           </div>
 
-          {/* Map Surface */}
-          <div className="relative h-80 rounded-2xl bg-[#F7F6F0] border border-stone-200 overflow-hidden shadow-inner flex items-center justify-center">
-            {/* Grid texture */}
-            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#292524_1px,transparent_1px)] bg-size-[20px_20px]" />
-
-            {/* Simulated Animated Road Path */}
-            <svg className="absolute inset-0 w-full h-full">
-              <path
-                d="M 60 250 Q 180 120 340 60"
-                fill="none"
-                stroke="#FFB7B2"
-                strokeWidth="6"
-                strokeLinecap="round"
-                className="opacity-80"
-              />
-              <path
-                d="M 60 250 Q 180 120 340 60"
-                fill="none"
-                stroke="#292524"
-                strokeWidth="2"
-                strokeDasharray="8,6"
-              />
-            </svg>
-
-            {/* Pickup Marker */}
-            <div className="absolute left-12 bottom-10 flex flex-col items-center">
-              <div className="w-8 h-8 rounded-full bg-emerald-600 border-2 border-white shadow-md flex items-center justify-center text-white text-xs font-bold">
-                P
-              </div>
-              <span className="text-[10px] font-bold bg-[#292524] text-white px-2 py-0.5 rounded shadow mt-1">
-                You
-              </span>
-            </div>
-
-            {/* Destination Marker */}
-            <div className="absolute right-12 top-10 flex flex-col items-center">
-              <div className="w-8 h-8 rounded-full bg-rose-500 border-2 border-white shadow-md flex items-center justify-center text-white text-xs font-bold">
-                D
-              </div>
-              <span className="text-[10px] font-bold bg-[#292524] text-white px-2 py-0.5 rounded shadow mt-1">
-                Destination
-              </span>
-            </div>
-
-            {/* Dynamic Driver Marker with Simulated Position */}
-            <div
-              className="absolute flex flex-col items-center transition-all duration-1000 ease-linear"
-              style={{
-                left: `${30 + driverProgress * 0.45}%`,
-                bottom: `${25 + driverProgress * 0.55}%`,
-              }}
-            >
-              <div className="relative">
-                <div className="w-10 h-10 rounded-full bg-[#FFB7B2] border-2 border-[#292524] shadow-md flex items-center justify-center text-base animate-bounce">
-                  {ride.vehicleType === "BIKE" ? "🏍️" : "🚗"}
-                </div>
-                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white" />
-              </div>
-              <span className="text-[10px] font-extrabold bg-[#292524] text-white px-2 py-0.5 rounded-full shadow mt-1 whitespace-nowrap">
-                {ride.driver.name.split(" ")[0]} ({formatEta(etaSeconds)})
-              </span>
-            </div>
+          {/* Interactive Leaflet Map Surface with Live Driver Tracking */}
+          <div className="relative h-80 sm:h-96 rounded-2xl overflow-hidden shadow-sm">
+            <LiveRideMap
+              pickup={
+                ride.pickupLat && ride.pickupLng
+                  ? {
+                      lat: ride.pickupLat,
+                      lng: ride.pickupLng,
+                      address: ride.pickup,
+                    }
+                  : { lat: 23.7925, lng: 90.4078, address: ride.pickup }
+              }
+              destination={
+                ride.destinationLat && ride.destinationLng
+                  ? {
+                      lat: ride.destinationLat,
+                      lng: ride.destinationLng,
+                      address: ride.destination,
+                    }
+                  : { lat: 23.7808, lng: 90.4192, address: ride.destination }
+              }
+              driver={
+                driverLiveCoords ||
+                (ride.pickupLat && ride.pickupLng
+                  ? {
+                      lat:
+                        journeyStatus === "IN_TRANSIT"
+                          ? ride.pickupLat +
+                            ((ride.destinationLat || ride.pickupLat) - ride.pickupLat) *
+                              (driverProgress / 100)
+                          : ride.pickupLat + 0.003,
+                      lng:
+                        journeyStatus === "IN_TRANSIT"
+                          ? ride.pickupLng +
+                            ((ride.destinationLng || ride.pickupLng) - ride.pickupLng) *
+                              (driverProgress / 100)
+                          : ride.pickupLng + 0.003,
+                    }
+                  : null)
+              }
+              vehicleType={ride.vehicleType}
+              interactive={true}
+            />
           </div>
 
           {/* Prototype Simulation Control Bar */}
@@ -428,12 +433,24 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
       <ConfirmModal
         isOpen={isCancelModalOpen}
         onClose={() => setIsCancelModalOpen(false)}
-        onConfirm={() => {
-          toast.info("Ride cancelled", "Your ride request has been cancelled.");
-          onRideCancelled();
+        onConfirm={async () => {
+          setIsCancelModalOpen(false);
+          const toastId = toast.loading("Cancelling ride...", "Processing refund of held payment");
+          try {
+            await api.post(`/rides/${ride.id}/cancel`);
+            toast.dismiss(toastId);
+            toast.success("Ride Cancelled", "Your ride has been cancelled and held payment refunded.");
+            onRideCancelled();
+          } catch (err: any) {
+            toast.dismiss(toastId);
+            toast.error(
+              "Cancellation Failed",
+              err?.response?.data?.message || err?.message || "Could not cancel ride"
+            );
+          }
         }}
         title="Cancel Ongoing Ride?"
-        message="Are you sure you want to cancel this ride? Your driver is already en route to your pickup point."
+        message="Are you sure you want to cancel this ride? If you cancel now, your ride will be stopped and any held payment will be released."
         confirmText="Yes, Cancel Ride"
         cancelText="Keep Ride"
         variant="danger"
