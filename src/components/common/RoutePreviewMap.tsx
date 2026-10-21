@@ -142,8 +142,8 @@ export const RoutePreviewMap: React.FC<RoutePreviewMapProps> = ({
   ]);
 
   return (
-    <div className="relative w-full h-full min-h-55 rounded-2xl overflow-hidden shadow-inner border border-stone-200">
-      <div ref={mapContainerRef} className="w-full h-full min-h-55" />
+    <div className="relative w-full h-full min-h-55 rounded-2xl overflow-hidden shadow-inner border border-stone-200 isolation-auto z-0">
+      <div ref={mapContainerRef} className="w-full h-full min-h-55 z-0" />
     </div>
   );
 };

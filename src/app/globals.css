@@ -110,3 +110,54 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(41, 37, 36, 0.3);
 }
+
+/* -------------------------------------------------------------
+ * Leaflet Z-Index Isolation & Hierarchy
+ * Leaflet defaults (.leaflet-pane at 400-700, .leaflet-top/bottom at 1000)
+ * bleed above standard application modals (z-50) and dropdowns.
+ * We isolate Leaflet map containers into a self-contained stacking context
+ * (z-index: 1) and cap internal panes so they never leak above z-30.
+ * ------------------------------------------------------------- */
+.leaflet-container {
+  z-index: 1 !important;
+  position: relative;
+  isolation: isolate;
+}
+
+.leaflet-pane {
+  z-index: 10 !important;
+}
+
+.leaflet-tile-pane {
+  z-index: 5 !important;
+}
+
+.leaflet-overlay-pane {
+  z-index: 12 !important;
+}
+
+.leaflet-shadow-pane {
+  z-index: 14 !important;
+}
+
+.leaflet-marker-pane {
+  z-index: 16 !important;
+}
+
+.leaflet-tooltip-pane {
+  z-index: 18 !important;
+}
+
+.leaflet-popup-pane {
+  z-index: 20 !important;
+}
+
+.leaflet-control {
+  z-index: 25 !important;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 25 !important;
+}
+

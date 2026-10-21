@@ -152,8 +152,8 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
   }, [center[0], center[1], zoom]);
 
   return (
-    <div className="relative w-full h-full min-h-80 rounded-2xl overflow-hidden shadow-inner border border-stone-200">
-      <div ref={mapContainerRef} className="w-full h-full min-h-80" />
+    <div className="relative w-full h-full min-h-80 rounded-2xl overflow-hidden shadow-inner border border-stone-200 isolation-auto z-0">
+      <div ref={mapContainerRef} className="w-full h-full min-h-80 z-0" />
     </div>
   );
 };

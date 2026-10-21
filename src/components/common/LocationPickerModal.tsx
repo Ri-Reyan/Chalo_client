@@ -159,7 +159,7 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
-      <div className="bg-white border border-stone-200 rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+      <div className="bg-white border border-stone-200 rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200 relative z-10">
         {/* Modal Header */}
         <div className="p-5 sm:p-6 border-b border-stone-200/80 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -196,7 +196,7 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
         {/* Modal Body: Map + Address Controls */}
         <div className="p-5 sm:p-6 space-y-4 overflow-y-auto">
           {/* Map Surface */}
-          <div className="w-full h-80 sm:h-96 rounded-2xl overflow-hidden relative shadow-sm">
+          <div className="w-full h-80 sm:h-96 rounded-2xl overflow-hidden relative shadow-sm z-0">
             <LeafletMap
               center={center}
               markerPosition={selectedCoords}
@@ -209,7 +209,7 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
               type="button"
               onClick={handleUseGps}
               disabled={isLocatingGps}
-              className="absolute top-3 right-3 z-1000 bg-white hover:bg-stone-50 text-[#292524] border border-stone-300 font-bold text-xs px-3 py-2 rounded-xl shadow-md flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95"
+              className="absolute top-3 right-3 z-30 bg-white hover:bg-stone-50 text-[#292524] border border-stone-300 font-bold text-xs px-3 py-2 rounded-xl shadow-md flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95"
             >
               <span>{isLocatingGps ? "⏳" : "🎯"}</span>
               <span>{isLocatingGps ? "Locating..." : "My GPS"}</span>

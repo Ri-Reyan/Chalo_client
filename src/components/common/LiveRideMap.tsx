@@ -183,8 +183,8 @@ export const LiveRideMap: React.FC<LiveRideMapProps> = ({
   }, [driver?.lat, driver?.lng, vehicleType]);
 
   return (
-    <div className="relative w-full h-full min-h-75 rounded-2xl overflow-hidden shadow-inner border border-stone-200">
-      <div ref={mapContainerRef} className="w-full h-full min-h-75" />
+    <div className="relative w-full h-full min-h-75 rounded-2xl overflow-hidden shadow-inner border border-stone-200 isolation-auto z-0">
+      <div ref={mapContainerRef} className="w-full h-full min-h-75 z-0" />
     </div>
   );
 };
