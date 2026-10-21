@@ -53,12 +53,12 @@
 ---
 
 ## 3. Authentication Flows
-- [ ] Unified Auth Layout with Chalo Brand Theme (Burgundy `#6f1b1b` & Gold `#d4b454`)
-- [ ] Customer & Driver Login Page (`/login`)
+- [x] Unified Auth Layout with Chalo Brand Theme (Burgundy `#6f1b1b` & Gold `#d4b454`)
+- [x] Customer & Driver Login Page (`/login`)
   - Role switcher tab (Customer / Driver)
   - Email & password inputs with floating labels & validation
   - Demo quick-fill credentials for testing
-- [ ] Customer & Driver Registration Page (`/register`)
+- [x] Customer & Driver Registration Page (`/register`)
   - Customer registration form
   - Driver multi-step registration (Personal Info -> Vehicle Details -> Verification)
 
