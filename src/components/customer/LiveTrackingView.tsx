@@ -23,12 +23,14 @@ interface LiveTrackingViewProps {
   ride: ActiveRideState | null;
   onRideCompleted: (ride: ActiveRideState) => void;
   onRideCancelled: () => void;
+  onRideAccepted?: (data: any) => void;
 }
 
 export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
   ride,
   onRideCompleted,
   onRideCancelled,
+  onRideAccepted,
 }) => {
   const [etaSeconds, setEtaSeconds] = useState(180); // 3 minutes demo countdown
   const [sosActivated, setSosActivated] = useState(false);
@@ -40,23 +42,55 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
     lat: number;
     lng: number;
   } | null>(null);
+  const [localDriver, setLocalDriver] = useState<any>(ride?.driver || null);
+  const [localStatus, setLocalStatus] = useState<string>(ride?.status || "REQUESTED");
+
+  // Keep local state in sync if ride prop updates
+  useEffect(() => {
+    if (ride?.driver) {
+      setLocalDriver(ride.driver);
+    }
+    if (ride?.status) {
+      setLocalStatus(ride.status);
+    }
+  }, [ride?.driver, ride?.status]);
 
   // Real-time socket room synchronization
   useEffect(() => {
-    if (!ride) return;
+    if (!ride?.id) return;
     joinRideRoom(ride.id);
 
     const socket = getSocket();
+
+    const handleRideAccepted = (data: any) => {
+      if (data?.driver) {
+        setLocalDriver(data.driver);
+        setLocalStatus("ACCEPTED");
+        setJourneyStatus("DRIVER_EN_ROUTE");
+        if (data.driver.lat && data.driver.lng) {
+          setDriverLiveCoords({ lat: Number(data.driver.lat), lng: Number(data.driver.lng) });
+        }
+        toast.success(
+          "Driver Assigned!",
+          `${data.driver?.name || "A driver"} accepted your ride and is en route.`,
+        );
+        onRideAccepted?.(data);
+      }
+    };
+
     const handleDriverArrived = () => {
       setJourneyStatus("DRIVER_ARRIVED");
+      setLocalStatus("ACCEPTED");
       toast.info("Driver Arrived!", "Your driver is waiting at the pickup location.");
     };
     const handleTripStarted = () => {
       setJourneyStatus("IN_TRANSIT");
+      setLocalStatus("ACCEPTED");
       toast.info("Trip Started", "Heading towards destination safely.");
     };
     const handleTripCompleted = () => {
       setJourneyStatus("COMPLETED");
+      setLocalStatus("COMPLETED");
       setShowRatingModal(true);
     };
 
@@ -66,6 +100,7 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
       }
     };
 
+    socket.on("ride:accepted", handleRideAccepted);
     socket.on("driver:arrived", handleDriverArrived);
     socket.on("ride:started", handleTripStarted);
     socket.on("ride:completed", handleTripCompleted);
@@ -73,12 +108,13 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
 
     return () => {
       leaveRideRoom(ride.id);
+      socket.off("ride:accepted", handleRideAccepted);
       socket.off("driver:arrived", handleDriverArrived);
       socket.off("ride:started", handleTripStarted);
       socket.off("ride:completed", handleTripCompleted);
       socket.off("driver:location", handleDriverLocation);
     };
-  }, [ride]);
+  }, [ride?.id, onRideAccepted]);
 
   useEffect(() => {
     if (!ride) return;
@@ -149,7 +185,8 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
     });
   };
 
-  const isSearching = !ride.driver || ride.status === "REQUESTED";
+  const assignedDriver = ride.driver || localDriver;
+  const isSearching = !assignedDriver || (ride.status === "REQUESTED" && !localDriver);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -279,21 +316,21 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
 
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-full bg-[#FFB7B2] text-[#292524] flex items-center justify-center text-xl font-extrabold shadow-xs">
-                    {(ride.driver?.name || "D").charAt(0)}
+                    {(assignedDriver?.name || "D").charAt(0)}
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-[#292524]">
-                      {ride.driver?.name || "Assigned Driver"}
+                      {assignedDriver?.name || "Assigned Driver"}
                     </h3>
                     <div className="text-xs text-stone-600 font-semibold flex items-center gap-1">
                       <span className="text-amber-500">★</span>
                       <span className="font-bold text-[#292524]">
-                        {ride.driver?.rating || "4.9 ★"}
+                        {assignedDriver?.rating || "4.9 ★"}
                       </span>
                       <span className="text-stone-400">• 1,200+ rides</span>
                     </div>
                     <div className="text-xs text-stone-500 mt-0.5">
-                      {ride.driver?.vehicleModel || "Verified Vehicle"}
+                      {assignedDriver?.vehicleModel || "Verified Vehicle"}
                     </div>
                   </div>
                 </div>
@@ -302,7 +339,7 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
                 <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-3 flex items-center justify-between text-xs">
                   <span className="text-stone-500 font-medium">Plate Number:</span>
                   <span className="font-extrabold text-[#292524] tracking-wider">
-                    {ride.driver?.plateNumber || "DHAKA METRO-HA 4821"}
+                    {assignedDriver?.plateNumber || "DHAKA METRO-HA 4821"}
                   </span>
                 </div>
 

@@ -55,6 +55,12 @@ function CustomerDashboardContent() {
     }
   }, [searchParams]);
 
+  // Ensure active ride socket room is joined whenever activeRide is set
+  useEffect(() => {
+    if (!activeRide?.id) return;
+    joinRideRoom(activeRide.id);
+  }, [activeRide?.id]);
+
   // Real-time synchronization for customer ride updates
   useEffect(() => {
     if (!user?.id) return;
@@ -67,10 +73,10 @@ function CustomerDashboardContent() {
           id: data.rideId || prev?.id || "",
           pickup: prev?.pickup || data.pickup || "Pickup Location",
           destination: prev?.destination || data.destination || "Destination",
-          pickupLat: prev?.pickupLat,
-          pickupLng: prev?.pickupLng,
-          destinationLat: prev?.destinationLat,
-          destinationLng: prev?.destinationLng,
+          pickupLat: typeof data.pickupLat === "number" ? data.pickupLat : prev?.pickupLat,
+          pickupLng: typeof data.pickupLng === "number" ? data.pickupLng : prev?.pickupLng,
+          destinationLat: typeof data.destinationLat === "number" ? data.destinationLat : prev?.destinationLat,
+          destinationLng: typeof data.destinationLng === "number" ? data.destinationLng : prev?.destinationLng,
           vehicleType: data.vehicleType || prev?.vehicleType || "BIKE",
           distanceKm: Number(data.distanceKm) || prev?.distanceKm || 0,
           fare: Number(data.fare) || prev?.fare || 0,
@@ -118,7 +124,7 @@ function CustomerDashboardContent() {
       socket.off("ride:no_driver", handleNoDriverFound);
       socket.off("ride:cancelled", handleRideCancelled);
     };
-  }, [user]);
+  }, [user?.id]);
 
   const customerName = user?.name || "Customer";
   const customerEmail = user?.email || "";
@@ -164,6 +170,30 @@ function CustomerDashboardContent() {
           {activeTab === "tracking" && (
             <LiveTrackingView
               ride={activeRide}
+              onRideAccepted={(data) => {
+                if (data?.driver) {
+                  setActiveRide((prev) => ({
+                    id: data.rideId || prev?.id || "",
+                    pickup: prev?.pickup || data.pickup || "Pickup Location",
+                    destination: prev?.destination || data.destination || "Destination",
+                    pickupLat: typeof data.pickupLat === "number" ? data.pickupLat : prev?.pickupLat,
+                    pickupLng: typeof data.pickupLng === "number" ? data.pickupLng : prev?.pickupLng,
+                    destinationLat: typeof data.destinationLat === "number" ? data.destinationLat : prev?.destinationLat,
+                    destinationLng: typeof data.destinationLng === "number" ? data.destinationLng : prev?.destinationLng,
+                    vehicleType: data.vehicleType || prev?.vehicleType || "BIKE",
+                    distanceKm: Number(data.distanceKm) || prev?.distanceKm || 0,
+                    fare: Number(data.fare) || prev?.fare || 0,
+                    status: "ACCEPTED",
+                    driver: data.driver,
+                    createdAt:
+                      prev?.createdAt ||
+                      new Date().toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }),
+                  }));
+                }
+              }}
               onRideCompleted={handleRideCompleted}
               onRideCancelled={handleRideCancelled}
             />

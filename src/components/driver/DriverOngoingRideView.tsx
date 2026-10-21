@@ -110,7 +110,7 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
       leaveRideRoom(ride.id);
       socket.off("ride:completed", handleRemoteCompleted);
     };
-  }, [ride]);
+  }, [ride?.id]);
 
   const handleArrivedAtPickup = async () => {
     setTripStep(2);
