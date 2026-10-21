@@ -86,7 +86,7 @@ function CustomerDashboardContent() {
         setActiveTab("tracking");
         toast.success(
           "Driver Assigned!",
-          `${data.driver.name} accepted your ride and is en route.`,
+          `${data.driver?.name || "A driver"} accepted your ride and is en route.`,
         );
       }
     };

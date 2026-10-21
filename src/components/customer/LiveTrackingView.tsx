@@ -31,8 +31,6 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
   onRideCancelled,
 }) => {
   const [etaSeconds, setEtaSeconds] = useState(180); // 3 minutes demo countdown
-  const [driverProgress, setDriverProgress] = useState(25); // Simulated percent along route
-  const [isCalling, setIsCalling] = useState(false);
   const [sosActivated, setSosActivated] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [rating, setRating] = useState(5);
@@ -89,11 +87,6 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
       setEtaSeconds((prev) => {
         if (prev <= 1) return 1;
         return prev - 1;
-      });
-
-      setDriverProgress((prev) => {
-        if (prev >= 90) return 90;
-        return prev + 1;
       });
     }, 1000);
 
@@ -229,43 +222,10 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
                     }
                   : { lat: 23.7808, lng: 90.4192, address: ride.destination }
               }
-              driver={
-                driverLiveCoords ||
-                (ride.pickupLat && ride.pickupLng
-                  ? {
-                      lat:
-                        journeyStatus === "IN_TRANSIT"
-                          ? ride.pickupLat +
-                            ((ride.destinationLat || ride.pickupLat) - ride.pickupLat) *
-                              (driverProgress / 100)
-                          : ride.pickupLat + 0.003,
-                      lng:
-                        journeyStatus === "IN_TRANSIT"
-                          ? ride.pickupLng +
-                            ((ride.destinationLng || ride.pickupLng) - ride.pickupLng) *
-                              (driverProgress / 100)
-                          : ride.pickupLng + 0.003,
-                    }
-                  : null)
-              }
+              driver={driverLiveCoords}
               vehicleType={ride.vehicleType}
               interactive={true}
             />
-          </div>
-
-          {/* Prototype Simulation Control Bar */}
-          <div className="p-3.5 bg-stone-50 border border-stone-200/80 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
-            <span className="text-stone-600 font-medium">
-              💡 Prototype Demo: Simulate ending the ride to test completion &
-              rating.
-            </span>
-            <button
-              type="button"
-              onClick={handleCompleteTrip}
-              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-xs"
-            >
-              Simulate Ride Arrival &rarr;
-            </button>
           </div>
         </div>
 
@@ -284,21 +244,21 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
 
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-full bg-[#FFB7B2] text-[#292524] flex items-center justify-center text-xl font-extrabold shadow-xs">
-                {ride.driver.name.charAt(0)}
+                {(ride.driver?.name || "D").charAt(0)}
               </div>
               <div>
                 <h3 className="text-lg font-bold text-[#292524]">
-                  {ride.driver.name}
+                  {ride.driver?.name || "Assigned Driver"}
                 </h3>
                 <div className="text-xs text-stone-600 font-semibold flex items-center gap-1">
                   <span className="text-amber-500">★</span>
                   <span className="font-bold text-[#292524]">
-                    {ride.driver.rating}
+                    {ride.driver?.rating || "4.9 ★"}
                   </span>
                   <span className="text-stone-400">• 1,200+ rides</span>
                 </div>
                 <div className="text-xs text-stone-500 mt-0.5">
-                  {ride.driver.vehicleModel}
+                  {ride.driver?.vehicleModel || "Verified Vehicle"}
                 </div>
               </div>
             </div>
@@ -307,28 +267,25 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
             <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-3 flex items-center justify-between text-xs">
               <span className="text-stone-500 font-medium">Plate Number:</span>
               <span className="font-extrabold text-[#292524] tracking-wider">
-                {ride.driver.plateNumber}
+                {ride.driver?.plateNumber || "DHAKA METRO-HA 4821"}
               </span>
             </div>
 
-            {/* Action Buttons: Call Driver & Cancel */}
-            <div className="grid grid-cols-2 gap-3 pt-2">
+            {/* Action Buttons: Cancel Ride & Confirm Arrival */}
+            <div className="space-y-3 pt-2">
               <button
                 type="button"
-                onClick={() => {
-                  setIsCalling(true);
-                  setTimeout(() => setIsCalling(false), 2000);
-                }}
-                className="py-3 px-4 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-[#292524] font-bold text-xs flex items-center justify-center gap-2 border border-stone-200 transition-all"
+                onClick={handleCompleteTrip}
+                className="w-full py-3.5 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-[1.01] active:scale-95"
               >
-                <span>📞</span>
-                <span>{isCalling ? "Connecting..." : "Call Driver"}</span>
+                <span>✓</span>
+                <span>Confirm Arrival / Ride Complete</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setIsCancelModalOpen(true)}
-                className="py-3 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
+                className="w-full py-2.5 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
               >
                 <span>✕</span>
                 <span>Cancel Ride</span>
@@ -401,7 +358,7 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
 
             <div>
               <span className="text-xs font-semibold text-stone-700 block mb-2">
-                Rate your driver ({ride.driver.name}):
+                Rate your driver ({ride.driver?.name || "Driver"}):
               </span>
               <div className="flex justify-center gap-2 text-2xl">
                 {[1, 2, 3, 4, 5].map((star) => (

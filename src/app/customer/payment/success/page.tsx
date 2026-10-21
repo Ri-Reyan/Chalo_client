@@ -23,6 +23,8 @@ function PaymentSuccessContent() {
   const [rideDetails, setRideDetails] = useState<any>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     if (!sessionId) {
       setIsVerifying(false);
       setErrorMessage("Missing Stripe checkout session parameter.");
@@ -49,6 +51,8 @@ function PaymentSuccessContent() {
 
         const response = await api.post("/payments/verify-session", payload);
 
+        if (!isMounted) return;
+
         if (response.data?.success) {
           const data = response.data.data;
           setIsSuccess(true);
@@ -64,6 +68,10 @@ function PaymentSuccessContent() {
             id: data.rideId,
             pickup: data.pickup || "Pickup Location",
             destination: data.destination || "Destination",
+            pickupLat: data.pickupLat,
+            pickupLng: data.pickupLng,
+            destinationLat: data.destinationLat,
+            destinationLng: data.destinationLng,
             vehicleType: data.vehicleType || "BIKE",
             distanceKm: Number(data.distanceKm) || 4.5,
             fare: Number(data.fare) || 2.5,
@@ -89,16 +97,22 @@ function PaymentSuccessContent() {
           };
 
           if (typeof window !== "undefined") {
-            sessionStorage.setItem(
-              "chalo_active_ride",
-              JSON.stringify(activeRide),
-            );
+            try {
+              sessionStorage.setItem(
+                "chalo_active_ride",
+                JSON.stringify(activeRide),
+              );
+            } catch (storageErr) {
+              console.warn("Storage warning:", storageErr);
+            }
           }
 
-          // Automatically transition to customer live tracking after 1.8s
+          // Automatically transition to customer live tracking after 1.5s
           setTimeout(() => {
-            router.push("/customer?tab=tracking");
-          }, 1800);
+            if (isMounted) {
+              router.replace("/customer?tab=tracking");
+            }
+          }, 1500);
         } else {
           setIsSuccess(false);
           setErrorMessage(
@@ -107,14 +121,22 @@ function PaymentSuccessContent() {
         }
       } catch (err) {
         console.error("Payment verification error:", err);
-        setIsSuccess(false);
-        setErrorMessage(getErrorMessage(err));
+        if (isMounted) {
+          setIsSuccess(false);
+          setErrorMessage(getErrorMessage(err));
+        }
       } finally {
-        setIsVerifying(false);
+        if (isMounted) {
+          setIsVerifying(false);
+        }
       }
     };
 
     verifyPayment();
+
+    return () => {
+      isMounted = false;
+    };
   }, [sessionId, rideId, tempRideId, router]);
 
   return (

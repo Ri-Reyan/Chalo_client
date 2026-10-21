@@ -132,10 +132,6 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
     }
   };
 
-  const handleFinishRide = () => {
-    setTripStep(4);
-  };
-
   const handleReturnToDashboard = () => {
     onRideCompleted(ride.netEarnings, ride);
   };
@@ -310,19 +306,18 @@ export const DriverOngoingRideView: React.FC<DriverOngoingRideViewProps> = ({
               </div>
             )}
 
-            {/* STEP 3 ACTION: Complete Ride */}
+            {/* STEP 3 ACTION: Ride In Progress (Waiting for customer arrival confirmation) */}
             {tripStep === 3 && (
-              <div className="pt-3 space-y-2">
-                <div className="bg-[#E8EFE8] border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800 text-center font-semibold">
-                  ✓ Ride in progress &bull; Navigating to destination
+              <div className="pt-3 space-y-3">
+                <div className="bg-[#E8EFE8] border border-emerald-200 rounded-2xl p-4 text-center space-y-1.5">
+                  <div className="text-sm font-bold text-emerald-900 flex items-center justify-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Trip In Progress
+                  </div>
+                  <p className="text-xs text-stone-600">
+                    Navigating to destination. Once you drop off the passenger, the customer will confirm arrival on their screen to release the payment.
+                  </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleFinishRide}
-                  className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-base tracking-wide transition-all shadow-md hover:scale-[1.01]"
-                >
-                  Complete Ride &amp; Collect Fare &rarr;
-                </button>
               </div>
             )}
 

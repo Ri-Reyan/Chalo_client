@@ -97,7 +97,7 @@ export const RideHistoryView: React.FC<RideHistoryViewProps> = ({
                     <span>&bull;</span>
                     <span>{ride.distanceKm} km</span>
                     <span>&bull;</span>
-                    <span>Driver: {ride.driver.name}</span>
+                    <span>Driver: {ride.driver?.name || "Driver"}</span>
                   </div>
                 </div>
               </div>
@@ -178,8 +178,8 @@ export const RideHistoryView: React.FC<RideHistoryViewProps> = ({
               <div>
                 Driver:{" "}
                 <span className="text-[#292524] font-medium">
-                  {selectedReceipt.driver.name} (
-                  {selectedReceipt.driver.plateNumber})
+                  {selectedReceipt.driver?.name || "Driver"} (
+                  {selectedReceipt.driver?.plateNumber || "Verified"})
                 </span>
               </div>
             </div>
