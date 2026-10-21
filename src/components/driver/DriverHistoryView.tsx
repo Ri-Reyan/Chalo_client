@@ -1,16 +1,59 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { DriverRideOffer } from "./AvailableRequestsView";
+import api from "@/lib/axios";
 
 interface DriverHistoryViewProps {
-  completedRides: DriverRideOffer[];
+  completedRides?: DriverRideOffer[];
 }
 
 export const DriverHistoryView: React.FC<DriverHistoryViewProps> = ({
-  completedRides,
+  completedRides: initialRides = [],
 }) => {
-  const allTrips = completedRides;
+  const [tripsList, setTripsList] = useState<DriverRideOffer[]>(initialRides);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Hydrate persistent driver ride history from backend
+  useEffect(() => {
+    let isMounted = true;
+    api
+      .get("/rides/history?role=DRIVER")
+      .then((res) => {
+        if (isMounted && res.data?.success && Array.isArray(res.data.data)) {
+          const mapped: DriverRideOffer[] = res.data.data.map((r: any) => ({
+            id: r.id,
+            customerName: r.customer?.name || "Customer",
+            customerRating: r.customer?.rating || "5.0 ★",
+            pickup: r.pickup || "Pickup Location",
+            destination: r.destination || "Destination",
+            pickupLat: r.pickupLat,
+            pickupLng: r.pickupLng,
+            destinationLat: r.destinationLat,
+            destinationLng: r.destinationLng,
+            distanceKm: Number(r.distanceKm),
+            pickupDistanceKm: 0.5,
+            grossFare: Number(r.grossFare || r.fare),
+            netEarnings: Number(r.netEarnings || (r.fare * 0.9)),
+            vehicleType: r.vehicleType,
+            expiresInSeconds: 0,
+          }));
+          setTripsList(mapped);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not load driver ride history:", err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const allTrips = tripsList;
   const totalEarnings = allTrips.reduce((acc, t) => acc + t.netEarnings, 0);
   const totalDistance = allTrips.reduce((acc, t) => acc + t.distanceKm, 0);
 

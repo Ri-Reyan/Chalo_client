@@ -42,7 +42,7 @@ export interface ActiveRideState {
     rating: string;
     plateNumber: string;
     etaMinutes: number;
-  };
+  } | null;
   otp?: string;
   createdAt: string;
 }

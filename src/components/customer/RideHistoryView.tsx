@@ -1,22 +1,65 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ActiveRideState } from "./RequestRideView";
+import api from "@/lib/axios";
 
 interface RideHistoryViewProps {
-  rides: ActiveRideState[];
+  rides?: ActiveRideState[];
   onRebook: (pickup: string, destination: string) => void;
 }
 
 export const RideHistoryView: React.FC<RideHistoryViewProps> = ({
-  rides,
+  rides: initialRides = [],
   onRebook,
 }) => {
+  const [ridesList, setRidesList] = useState<ActiveRideState[]>(initialRides);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedReceipt, setSelectedReceipt] =
     useState<ActiveRideState | null>(null);
 
-  // Completed rides for the current authenticated user
-  const allRides = rides;
+  // Hydrate persistent ride history from backend
+  useEffect(() => {
+    let isMounted = true;
+    api
+      .get("/rides/history?role=CUSTOMER")
+      .then((res) => {
+        if (isMounted && res.data?.success && Array.isArray(res.data.data)) {
+          const mapped: ActiveRideState[] = res.data.data.map((r: any) => ({
+            id: r.id,
+            pickup: r.pickup || "Pickup Location",
+            destination: r.destination || "Destination",
+            pickupLat: r.pickupLat,
+            pickupLng: r.pickupLng,
+            destinationLat: r.destinationLat,
+            destinationLng: r.destinationLng,
+            vehicleType: r.vehicleType,
+            distanceKm: Number(r.distanceKm),
+            fare: Number(r.fare),
+            status: r.status,
+            driver: r.driver,
+            createdAt: new Date(r.createdAt).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            }),
+          }));
+          setRidesList(mapped);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not load backend ride history:", err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const allRides = ridesList;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">

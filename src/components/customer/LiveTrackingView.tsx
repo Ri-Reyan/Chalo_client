@@ -149,6 +149,8 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
     });
   };
 
+  const isSearching = !ride.driver || ride.status === "REQUESTED";
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Status Banner */}
@@ -161,28 +163,32 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
             <div>
               <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-widest flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                {journeyStatus === "DRIVER_ARRIVED"
-                  ? "Driver Arrived at Pickup"
-                  : journeyStatus === "IN_TRANSIT"
-                    ? "In Transit to Destination"
-                    : "Live Journey Tracking"}
+                {isSearching
+                  ? "Matching Nearby Drivers"
+                  : journeyStatus === "DRIVER_ARRIVED"
+                    ? "Driver Arrived at Pickup"
+                    : journeyStatus === "IN_TRANSIT"
+                      ? "In Transit to Destination"
+                      : "Live Journey Tracking"}
               </span>
               <h1 className="text-xl sm:text-2xl font-bold text-[#292524]">
-                {journeyStatus === "DRIVER_ARRIVED"
-                  ? "Your driver is waiting at pickup"
-                  : journeyStatus === "IN_TRANSIT"
-                    ? "Trip in progress"
-                    : "Your driver is on the way"}
+                {isSearching
+                  ? "Pinging online drivers within 2.0 km..."
+                  : journeyStatus === "DRIVER_ARRIVED"
+                    ? "Your driver is waiting at pickup"
+                    : journeyStatus === "IN_TRANSIT"
+                      ? "Trip in progress"
+                      : "Your driver is on the way"}
               </h1>
             </div>
           </div>
 
           <div className="bg-stone-50 border border-stone-200/80 rounded-2xl px-5 py-2.5 text-center sm:text-right">
             <span className="text-[10px] text-stone-500 uppercase tracking-wider block">
-              Estimated Arrival
+              {isSearching ? "Status" : "Estimated Arrival"}
             </span>
             <div className="text-2xl font-black text-[#292524]">
-              {formatEta(etaSeconds)}
+              {isSearching ? "Searching..." : formatEta(etaSeconds)}
             </div>
           </div>
         </div>
@@ -231,66 +237,97 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
 
         {/* Right Column: Driver Card, Security PIN, & Emergency (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
-          {/* Driver Profile Card */}
+          {/* Driver Profile Card or Searching State */}
           <div className="bg-white border border-stone-200/80 rounded-3xl p-6 shadow-sm space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-200">
-              <span className="text-xs font-bold text-stone-700 uppercase tracking-wider">
-                Assigned Driver
-              </span>
-              <span className="text-xs font-bold text-emerald-800 bg-[#E8EFE8] border border-emerald-200 px-2.5 py-0.5 rounded-md">
-                Verified Partner
-              </span>
-            </div>
+            {isSearching ? (
+              <div className="py-6 text-center space-y-4">
+                <div className="relative w-16 h-16 mx-auto flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full bg-emerald-400/20 animate-ping" />
+                  <div className="relative w-12 h-12 rounded-full bg-[#E8EFE8] border border-emerald-300 flex items-center justify-center text-xl shadow-xs">
+                    🛰️
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-base font-bold text-[#292524]">
+                    Dispatching Nearby Drivers
+                  </h3>
+                  <p className="text-xs text-stone-500 max-w-xs mx-auto">
+                    Payment authorized in escrow. We are notifying nearby drivers within 2.0 km. As soon as a driver accepts, their live details will appear here.
+                  </p>
+                </div>
 
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-[#FFB7B2] text-[#292524] flex items-center justify-center text-xl font-extrabold shadow-xs">
-                {(ride.driver?.name || "D").charAt(0)}
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsCancelModalOpen(true)}
+                    className="w-full py-2.5 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
+                  >
+                    <span>✕ Cancel Request</span>
+                  </button>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-[#292524]">
-                  {ride.driver?.name || "Assigned Driver"}
-                </h3>
-                <div className="text-xs text-stone-600 font-semibold flex items-center gap-1">
-                  <span className="text-amber-500">★</span>
-                  <span className="font-bold text-[#292524]">
-                    {ride.driver?.rating || "4.9 ★"}
+            ) : (
+              <>
+                <div className="flex items-center justify-between pb-3 border-b border-stone-200">
+                  <span className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+                    Assigned Driver
                   </span>
-                  <span className="text-stone-400">• 1,200+ rides</span>
+                  <span className="text-xs font-bold text-emerald-800 bg-[#E8EFE8] border border-emerald-200 px-2.5 py-0.5 rounded-md">
+                    Verified Partner
+                  </span>
                 </div>
-                <div className="text-xs text-stone-500 mt-0.5">
-                  {ride.driver?.vehicleModel || "Verified Vehicle"}
+
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-full bg-[#FFB7B2] text-[#292524] flex items-center justify-center text-xl font-extrabold shadow-xs">
+                    {(ride.driver?.name || "D").charAt(0)}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-[#292524]">
+                      {ride.driver?.name || "Assigned Driver"}
+                    </h3>
+                    <div className="text-xs text-stone-600 font-semibold flex items-center gap-1">
+                      <span className="text-amber-500">★</span>
+                      <span className="font-bold text-[#292524]">
+                        {ride.driver?.rating || "4.9 ★"}
+                      </span>
+                      <span className="text-stone-400">• 1,200+ rides</span>
+                    </div>
+                    <div className="text-xs text-stone-500 mt-0.5">
+                      {ride.driver?.vehicleModel || "Verified Vehicle"}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* License Plate Number */}
-            <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-3 flex items-center justify-between text-xs">
-              <span className="text-stone-500 font-medium">Plate Number:</span>
-              <span className="font-extrabold text-[#292524] tracking-wider">
-                {ride.driver?.plateNumber || "DHAKA METRO-HA 4821"}
-              </span>
-            </div>
+                {/* License Plate Number */}
+                <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-3 flex items-center justify-between text-xs">
+                  <span className="text-stone-500 font-medium">Plate Number:</span>
+                  <span className="font-extrabold text-[#292524] tracking-wider">
+                    {ride.driver?.plateNumber || "DHAKA METRO-HA 4821"}
+                  </span>
+                </div>
 
-            {/* Action Buttons: Cancel Ride & Confirm Arrival */}
-            <div className="space-y-3 pt-2">
-              <button
-                type="button"
-                onClick={handleCompleteTrip}
-                className="w-full py-3.5 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-[1.01] active:scale-95"
-              >
-                <span>✓</span>
-                <span>Confirm Arrival / Ride Complete</span>
-              </button>
+                {/* Action Buttons: Cancel Ride & Confirm Arrival */}
+                <div className="space-y-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleCompleteTrip}
+                    className="w-full py-3.5 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-[1.01] active:scale-95"
+                  >
+                    <span>✓</span>
+                    <span>Confirm Arrival / Ride Complete</span>
+                  </button>
 
-              <button
-                type="button"
-                onClick={() => setIsCancelModalOpen(true)}
-                className="w-full py-2.5 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
-              >
-                <span>✕</span>
-                <span>Cancel Ride</span>
-              </button>
-            </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsCancelModalOpen(true)}
+                    className="w-full py-2.5 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
+                  >
+                    <span>✕</span>
+                    <span>Cancel Ride</span>
+                  </button>
+                </div>
+              </>
+            )}
 
             {/* Emergency SOS Button */}
             <div className="pt-2">

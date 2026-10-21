@@ -63,7 +63,7 @@ function PaymentSuccessContent() {
             `$${Number(data.fare).toFixed(2)} held in escrow. Dispatching drivers...`,
           );
 
-          // Save active ride into session for seamless transition to tracking
+          // Save active ride into session for seamless transition to tracking (without pre-assigned fake driver)
           const activeRide = {
             id: data.rideId,
             pickup: data.pickup || "Pickup Location",
@@ -76,20 +76,7 @@ function PaymentSuccessContent() {
             distanceKm: Number(data.distanceKm) || 4.5,
             fare: Number(data.fare) || 2.5,
             status: "REQUESTED",
-            driver: {
-              name:
-                data.vehicleType === "BIKE"
-                  ? "Chalo Rider"
-                  : "Chalo Driver",
-              vehicleModel:
-                data.vehicleType === "BIKE"
-                  ? "Motorbike (150cc)"
-                  : "Sedan (Hybrid)",
-              rating: "4.9 ★",
-              plateNumber: "DHAKA METRO-HA 4821",
-              etaMinutes: 3,
-            },
-            otp: "5821",
+            driver: null,
             createdAt: new Date().toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
