@@ -5,6 +5,7 @@ import SocialProof from "@/components/landing/SocialProof";
 import ProblemStatement from "@/components/landing/ProblemStatement";
 import Solution from "@/components/landing/Solution";
 import HowItWorks from "@/components/landing/HowItWorks";
+import FAQ from "@/components/landing/FAQ";
 
 export default function Home() {
   return (
@@ -28,6 +29,9 @@ export default function Home() {
 
         {/* 6. How It Works (Step-by-step guide) */}
         <HowItWorks />
+
+        {/* 7. FAQs Section */}
+        <FAQ />
       </main>
     </div>
   );

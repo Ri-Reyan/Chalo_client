@@ -42,7 +42,7 @@
 - [x] **Section 6: How It Works**
   - Visual step-by-step guide for Riders (Set pickup -> Match driver -> Track live -> Arrive safely)
   - Tab switch for Drivers (Go online -> Accept request -> Pick up rider -> Get paid instantly)
-- [ ] **Section 7: FAQs Section**
+- [x] **Section 7: FAQs Section**
   - Expandable accordion with 6-8 comprehensive questions
   - Smooth slide animations and plus/close rotational transitions
 - [ ] **Section 8: Footer with CTA**
