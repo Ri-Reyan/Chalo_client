@@ -3,6 +3,7 @@ import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import SocialProof from "@/components/landing/SocialProof";
 import ProblemStatement from "@/components/landing/ProblemStatement";
+import Solution from "@/components/landing/Solution";
 
 export default function Home() {
   return (
@@ -20,6 +21,9 @@ export default function Home() {
 
         {/* 4. Problem Statement Section */}
         <ProblemStatement />
+
+        {/* 5. Solution & Value Proposition with CTA */}
+        <Solution />
       </main>
     </div>
   );

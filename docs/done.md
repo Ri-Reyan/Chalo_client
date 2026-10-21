@@ -35,7 +35,7 @@
 - [x] **Section 4: Problem Statement**
   - Highlight current ride-hailing pains (hidden surge pricing, driver cancellations, long wait times, cold corporate feel)
   - Before vs After comparison cards
-- [ ] **Section 5: Solution & Value Proposition**
+- [x] **Section 5: Solution & Value Proposition**
   - Interactive feature highlights (fair pricing, guaranteed pickups, driver welfare)
   - 3-Phone Cascade App Preview with floating animations
   - Live Interactive Fare Estimate preview widget
