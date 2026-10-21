@@ -32,7 +32,7 @@
 - [x] **Section 3: Social Proof / Stats**
   - Impact metrics counter grid (Completed rides, active drivers, average rating, coverage cities)
   - Horizontal/grid cards with subtle rotation, sticky-note aesthetic, and cursive signatures
-- [ ] **Section 4: Problem Statement**
+- [x] **Section 4: Problem Statement**
   - Highlight current ride-hailing pains (hidden surge pricing, driver cancellations, long wait times, cold corporate feel)
   - Before vs After comparison cards
 - [ ] **Section 5: Solution & Value Proposition**

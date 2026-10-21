@@ -183,7 +183,7 @@ export const SocialProof: React.FC = () => {
       {
         threshold: 0.25, // Triggers when at least 25% of the stats container is visible
         rootMargin: "0px 0px -40px 0px",
-      }
+      },
     );
 
     observer.observe(el);
@@ -233,7 +233,7 @@ export const SocialProof: React.FC = () => {
               key={idx}
               className="bg-white/80 backdrop-blur-sm border border-stone-200/80 rounded-3xl p-6 sm:p-7 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 group"
             >
-              <div className="text-3xl sm:text-4xl font-extrabold text-[#292524] tracking-tight group-hover:text-[#FF9E98] transition-colors tabular-nums min-h-[44px] flex items-center">
+              <div className="text-3xl sm:text-4xl font-extrabold text-[#292524] tracking-tight group-hover:text-[#FF9E98] transition-colors tabular-nums min-h-11 flex items-center">
                 <AnimatedCounter
                   target={stat.target}
                   decimals={stat.decimals}
@@ -320,7 +320,8 @@ export const SocialProof: React.FC = () => {
                 100% Ride Safety Guarantee
               </div>
               <div className="text-xs text-[#78716C]">
-                SOS emergency dispatch, verified vehicle documents, & 24/7 hotline
+                SOS emergency dispatch, verified vehicle documents, & 24/7
+                hotline
               </div>
             </div>
           </div>

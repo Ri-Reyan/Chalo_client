@@ -2,6 +2,7 @@ import React from "react";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import SocialProof from "@/components/landing/SocialProof";
+import ProblemStatement from "@/components/landing/ProblemStatement";
 
 export default function Home() {
   return (
@@ -16,6 +17,9 @@ export default function Home() {
 
         {/* 3. Social Proof / Stats Section */}
         <SocialProof />
+
+        {/* 4. Problem Statement Section */}
+        <ProblemStatement />
       </main>
     </div>
   );
