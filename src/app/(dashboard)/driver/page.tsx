@@ -144,6 +144,15 @@ function DriverDashboardContent() {
 
   const handleWithdrawSuccess = (withdrawAmount: number) => {
     setBalance((prev) => Math.max(0, prev - withdrawAmount));
+    // Re-sync authoritative balance from backend
+    api
+      .get("/drivers/balance")
+      .then((res) => {
+        if (res.data?.success && typeof res.data.data?.balance === "number") {
+          setBalance(res.data.data.balance);
+        }
+      })
+      .catch(() => {});
   };
 
   return (
