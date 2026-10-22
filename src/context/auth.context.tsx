@@ -116,14 +116,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return consolidatedUser;
       }
 
-      setUser(null);
-      persistUser(null);
       return null;
     } catch (err: any) {
       // 401 error means token expired or invalid session
       if (err.response?.status === 401) {
-        setUser(null);
-        persistUser(null);
+        // Only clear persistent user if there is no token in localStorage
+        const hasToken =
+          typeof window !== "undefined" &&
+          Boolean(localStorage.getItem("chalo_token"));
+        if (!hasToken) {
+          setUser(null);
+          persistUser(null);
+        }
       }
       return null;
     } finally {
@@ -147,7 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setLoading(true);
         setError(null);
 
-        const res = await api.post<ApiResponse<{ user: User } | User>>(
+        const res = await api.post<ApiResponse<{ user: User; accessToken?: string } | User>>(
           "/auth/login",
           {
             email: credentials.email.trim().toLowerCase(),
@@ -155,14 +159,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           },
         );
 
-        // Response envelope returns data: { user: safeUser }
+        // Response envelope returns data: { user: safeUser, accessToken }
         const responseData = res.data?.data as any;
         const loggedUser: User = responseData?.user || responseData;
+        const accessToken = responseData?.accessToken;
 
         if (!loggedUser || !loggedUser.role) {
           throw new Error(
             "Invalid response format received from authentication server.",
           );
+        }
+
+        if (accessToken && typeof window !== "undefined") {
+          localStorage.setItem("chalo_token", accessToken);
         }
 
         setUser(loggedUser);
@@ -210,11 +219,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         );
         const responseData = res.data?.data as any;
         const newUser: User = responseData?.user || responseData;
+        const accessToken = responseData?.accessToken;
 
         if (!newUser || !newUser.role) {
           throw new Error(
             "Invalid response format received from registration server.",
           );
+        }
+
+        if (accessToken && typeof window !== "undefined") {
+          localStorage.setItem("chalo_token", accessToken);
         }
 
         setUser(newUser);
@@ -248,6 +262,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } finally {
       setUser(null);
       persistUser(null);
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("chalo_token");
+      }
       setLoading(false);
       router.push("/login");
     }

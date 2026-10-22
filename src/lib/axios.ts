@@ -39,9 +39,17 @@ export const api: AxiosInstance = axios.create({
 
 /**
  * Request interceptor for logging or dynamic header injection.
+ * Injects Authorization header from localStorage if available, ensuring
+ * seamless authentication even if cross-site cookies are blocked or stripped.
  */
 api.interceptors.request.use(
   (config) => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("chalo_token");
+      if (token && !config.headers.Authorization) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
     return config;
   },
   (error) => {
