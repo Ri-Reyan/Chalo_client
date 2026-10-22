@@ -61,15 +61,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const router = useRouter();
   const pathname = usePathname();
 
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window === "undefined") return null;
-    try {
-      const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
-      return cached ? JSON.parse(cached) : null;
-    } catch {
-      return null;
-    }
-  });
+  // SSR-safe state: Initial render is identical on server and client
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -96,12 +89,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   /**
    * Fetch currently authenticated user via backend GET /auth/me
-   * Verified by the HTTP-only accessToken/refreshToken cookies.
+   * Verified by the HTTP-only accessToken/refreshToken cookies or Bearer token.
    */
   const getMe = useCallback(async (): Promise<User | null> => {
     try {
       setError(null);
-      const res = await api.get<ApiResponse<User>>("/auth/me");
+      // Hard cap at 4 seconds so session check never hangs the frontend indefinitely
+      const res = await api.get<ApiResponse<User>>("/auth/me", {
+        timeout: 4000,
+      });
       const fetched = res.data?.data;
 
       if (fetched) {
@@ -118,15 +114,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       return null;
     } catch (err: any) {
-      // 401 error means token expired or invalid session
+      // 401 error means token is invalid or expired: purge invalid session
       if (err.response?.status === 401) {
-        // Only clear persistent user if there is no token in localStorage
-        const hasToken =
-          typeof window !== "undefined" &&
-          Boolean(localStorage.getItem("chalo_token"));
-        if (!hasToken) {
-          setUser(null);
-          persistUser(null);
+        setUser(null);
+        persistUser(null);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("chalo_token");
         }
       }
       return null;
@@ -136,10 +129,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [persistUser]);
 
   /**
-   * Execute initial session check on app mount.
+   * Hydrate cached user from localStorage immediately on client mount,
+   * then verify in background with a safety release timer.
    */
   useEffect(() => {
-    getMe();
+    let hasCached = false;
+    try {
+      const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && parsed.role) {
+          setUser(parsed);
+          hasCached = true;
+          // Unblock UI immediately so cached dashboard displays without wait
+          setLoading(false);
+        }
+      }
+    } catch {
+      // Ignore parse errors on cached state
+    }
+
+    // If no token in storage, user is definitely not logged in; end loading immediately
+    if (!hasCached) {
+      const token = localStorage.getItem("chalo_token");
+      if (!token) {
+        setLoading(false);
+      }
+    }
+
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 2500);
+
+    getMe().finally(() => {
+      clearTimeout(safetyTimer);
+      setLoading(false);
+    });
+
+    return () => clearTimeout(safetyTimer);
   }, [getMe]);
 
   /**

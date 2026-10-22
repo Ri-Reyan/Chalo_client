@@ -42,53 +42,113 @@ export const AvailableRequestsView: React.FC<AvailableRequestsViewProps> = ({
     incomingOffer,
   );
   const [countdown, setCountdown] = useState(30);
+  const activeOfferRef = React.useRef<DriverRideOffer | null>(activeOffer);
 
   useEffect(() => {
-    setActiveOffer(incomingOffer);
+    activeOfferRef.current = activeOffer;
+  }, [activeOffer]);
+
+  useEffect(() => {
+    if (incomingOffer) {
+      setActiveOffer(incomingOffer);
+      setCountdown(30);
+    }
   }, [incomingOffer]);
 
-  // Real-time socket listener for incoming ride requests within radius
+  const formatOffer = (raw: any): DriverRideOffer => {
+    const grossFare = Number(raw.grossFare || raw.fare || 0);
+    const netEarnings = Number(
+      raw.netEarnings || (grossFare * 0.9).toFixed(2),
+    );
+    return {
+      id: raw.id || raw.rideId,
+      customerName: raw.customerName || raw.customer?.name || "Passenger",
+      customerRating: raw.customerRating || raw.customer?.rating || "4.9 ★",
+      pickup: raw.pickup || "Pickup Location",
+      destination: raw.destination || "Destination Drop-off",
+      pickupDistanceKm:
+        typeof raw.pickupDistanceKm === "number" ? raw.pickupDistanceKm : 0.5,
+      distanceKm: Number(raw.distanceKm) || 0,
+      grossFare,
+      netEarnings,
+      vehicleType: raw.vehicleType || vehicleType,
+      pickupLat: raw.pickupLat ? Number(raw.pickupLat) : undefined,
+      pickupLng: raw.pickupLng ? Number(raw.pickupLng) : undefined,
+      destinationLat: raw.destinationLat ? Number(raw.destinationLat) : undefined,
+      destinationLng: raw.destinationLng ? Number(raw.destinationLng) : undefined,
+      expiresInSeconds: raw.expiresInSeconds || 30,
+    };
+  };
+
+  // Real-time socket listener for incoming ride requests within radius + 4s polling fallback
   useEffect(() => {
     if (!isOnline) return;
     const socket = getSocket();
 
+    // Explicitly join driver pool room
+    socket.emit("join:driver", { vehicleType });
+
+    // Initial and event-driven check for available rides from backend
+    const fetchAvailable = () => {
+      if (activeOfferRef.current) return;
+      api
+        .get(`/rides/available?vehicleType=${vehicleType}`)
+        .then((res) => {
+          if (res.data?.success && res.data?.data?.length > 0) {
+            if (!activeOfferRef.current) {
+              const first = formatOffer(res.data.data[0]);
+              setActiveOffer(first);
+              setCountdown(30);
+            }
+          }
+        })
+        .catch(() => {});
+    };
+
+    let lastHandledOfferId = "";
+
     const handleNewRide = (offer: any) => {
       if (offer) {
-        setActiveOffer(offer);
+        const offerId = offer.id || offer.rideId;
+        if (offerId && lastHandledOfferId === offerId) {
+          return;
+        }
+        lastHandledOfferId = offerId;
+
+        const formatted = formatOffer(offer);
+        setActiveOffer(formatted);
         setCountdown(30);
         toast.info(
           "New Ride Offer Available!",
-          `Passenger nearby. Take-home pay: $${Number(offer.netEarnings).toFixed(2)}`
+          `Passenger nearby. Take-home pay: $${Number(formatted.netEarnings).toFixed(2)}`,
         );
+      } else {
+        fetchAvailable();
       }
     };
 
     const handleRideTaken = (data: { rideId: string }) => {
-      if (activeOffer && activeOffer.id === data.rideId) {
+      if (activeOfferRef.current && activeOfferRef.current.id === data.rideId) {
         setActiveOffer(null);
         toast.info("Offer Taken", "Another driver accepted this trip.");
       }
     };
 
-    socket.on("ride:new", handleNewRide);
+    socket.on("ride:requested", handleNewRide);
+    socket.on("ride:broadcast", handleNewRide);
     socket.on("ride:taken", handleRideTaken);
 
-    // Initial check for available rides from backend
-    api.get("/rides/available")
-      .then((res) => {
-        if (res.data?.success && res.data?.data?.length > 0) {
-          const first = res.data.data[0];
-          setActiveOffer(first);
-          setCountdown(30);
-        }
-      })
-      .catch(() => {});
+    fetchAvailable();
+
+    const pollInterval = setInterval(fetchAvailable, 5000);
 
     return () => {
-      socket.off("ride:new", handleNewRide);
+      clearInterval(pollInterval);
+      socket.off("ride:requested", handleNewRide);
+      socket.off("ride:broadcast", handleNewRide);
       socket.off("ride:taken", handleRideTaken);
     };
-  }, [isOnline, activeOffer]);
+  }, [isOnline, vehicleType]);
 
   // 30-second countdown for decision when active offer is present
   useEffect(() => {
@@ -124,24 +184,45 @@ export const AvailableRequestsView: React.FC<AvailableRequestsViewProps> = ({
       if (response.data?.success) {
         toast.success(
           "Trip Accepted!",
-          `Earn $${Number(activeOffer.netEarnings).toFixed(2)} upon completion.`
+          `Earn $${Number(activeOffer.netEarnings).toFixed(2)} upon completion.`,
+        );
+        const data = response.data.data;
+        const acceptedOffer: DriverRideOffer = {
+          ...activeOffer,
+          id: data?.id || data?.rideId || activeOffer.id,
+          pickup: data?.pickup || activeOffer.pickup,
+          destination: data?.destination || activeOffer.destination,
+          customerName: data?.customer?.name || activeOffer.customerName,
+          customerRating: data?.customer?.rating || activeOffer.customerRating,
+          distanceKm: Number(data?.distanceKm) || activeOffer.distanceKm,
+          grossFare: Number(data?.fare) || activeOffer.grossFare,
+          netEarnings: Number(
+            data?.fare
+              ? (Number(data.fare) * 0.9).toFixed(2)
+              : activeOffer.netEarnings,
+          ),
+          vehicleType:
+            data?.vehicleType || activeOffer.vehicleType || vehicleType,
+        };
+        onAcceptRide(acceptedOffer);
+      } else {
+        toast.error(
+          "Could Not Accept Trip",
+          response.data?.message || "Trip is no longer available.",
         );
       }
     } catch (err) {
       toast.dismiss(toastId);
       const errMsg = getErrorMessage(err);
-      if (errMsg.toLowerCase().includes("already")) {
-        toast.error("Trip Taken", errMsg);
+      toast.error("Could Not Accept Trip", errMsg);
+      if (
+        errMsg.toLowerCase().includes("already") ||
+        errMsg.toLowerCase().includes("not found")
+      ) {
         setActiveOffer(null);
-        return;
       }
-      console.warn("Backend accept fallback:", err);
+      console.warn("Backend accept error:", err);
     }
-
-    onAcceptRide({
-      ...activeOffer,
-      vehicleType,
-    });
   };
 
   if (!isOnline) {
@@ -181,18 +262,17 @@ export const AvailableRequestsView: React.FC<AvailableRequestsViewProps> = ({
             Available Requests
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-stone-500">
-            Incoming dispatch offers within your 2km radius with full upfront
-            destination disclosure.
+            Incoming dispatch offers with full upfront destination disclosure.
           </p>
         </div>
 
         <div className="bg-stone-50 border border-stone-200/80 rounded-2xl px-5 py-3 text-center sm:text-right shrink-0">
           <span className="text-[11px] text-stone-500 block">
-            Radius Dispatch
+            Dispatch Coverage
           </span>
-          <div className="text-xl font-bold text-[#292524]">&le; 2.0 KM</div>
+          <div className="text-xl font-bold text-[#292524]">Active</div>
           <span className="text-[10px] text-emerald-700 font-semibold">
-            Strict Geo-Matching
+            All Online Drivers
           </span>
         </div>
       </div>

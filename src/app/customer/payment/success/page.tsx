@@ -31,6 +31,16 @@ function PaymentSuccessContent() {
       return;
     }
 
+    // Safety timeout: Never allow verification spinner to spin indefinitely (max 8s)
+    const safetyTimer = setTimeout(() => {
+      if (isMounted) {
+        setIsVerifying(false);
+        setErrorMessage(
+          "Payment verification timed out. If your card was charged, your ride request will appear in your dashboard.",
+        );
+      }
+    }, 8000);
+
     const verifyPayment = async () => {
       try {
         const payload: {
@@ -49,7 +59,9 @@ function PaymentSuccessContent() {
           payload.tempRideId = tempRideId;
         }
 
-        const response = await api.post("/payments/verify-session", payload);
+        const response = await api.post("/payments/verify-session", payload, {
+          timeout: 7000,
+        });
 
         if (!isMounted) return;
 
@@ -75,8 +87,11 @@ function PaymentSuccessContent() {
             );
 
             // Save active ride into session for seamless transition to tracking (without pre-assigned fake driver)
+            // When payment succeeds, the ride is strictly in REQUESTED state with driverId: null.
+            const isAcceptedWithDriver =
+              data.status === "ACCEPTED" && Boolean(data.driver?.id);
             const activeRide = {
-              id: data.rideId,
+              id: data.rideId || data.id,
               pickup: data.pickup || "Pickup Location",
               destination: data.destination || "Destination",
               pickupLat: data.pickupLat,
@@ -86,8 +101,8 @@ function PaymentSuccessContent() {
               vehicleType: data.vehicleType || "BIKE",
               distanceKm: Number(data.distanceKm) || 4.5,
               fare: Number(data.fare) || 2.5,
-              status: data.status || "REQUESTED",
-              driver: data.driver || null,
+              status: isAcceptedWithDriver ? "ACCEPTED" : "REQUESTED",
+              driver: isAcceptedWithDriver ? data.driver : null,
               createdAt: new Date().toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
@@ -125,6 +140,7 @@ function PaymentSuccessContent() {
           setErrorMessage(getErrorMessage(err));
         }
       } finally {
+        clearTimeout(safetyTimer);
         if (isMounted) {
           setIsVerifying(false);
         }
@@ -134,6 +150,7 @@ function PaymentSuccessContent() {
     verifyPayment();
 
     return () => {
+      clearTimeout(safetyTimer);
       isMounted = false;
     };
   }, [sessionId, rideId, tempRideId, router]);
@@ -192,7 +209,7 @@ function PaymentSuccessContent() {
                   No Drivers Available
                 </h1>
                 <p className="text-xs sm:text-sm text-stone-500 max-w-sm mx-auto leading-relaxed">
-                  No nearby drivers were available within the 4.0 km search radius.
+                  No nearby drivers were available to accept this trip.
                   Your upfront fare of{" "}
                   <strong>
                     ${Number(rideDetails.fare).toFixed(2)}
@@ -265,7 +282,7 @@ function PaymentSuccessContent() {
                   <strong>
                     ${rideDetails ? Number(rideDetails.fare).toFixed(2) : "0.00"}
                   </strong>{" "}
-                  has been authorized. Redirecting you to live driver tracking...
+                  has been authorized. Searching nearby drivers within 2.0 km...
                 </p>
               </div>
 
@@ -274,7 +291,7 @@ function PaymentSuccessContent() {
                   href="/customer?tab=tracking"
                   className="w-full py-4 px-6 rounded-2xl bg-[#FFB7B2] hover:bg-[#FF9E98] text-[#292524] font-extrabold text-sm tracking-wide shadow-sm hover:scale-[1.01] active:scale-95 transition-all block text-center"
                 >
-                  Go to Live Ride Tracking &rarr;
+                  Go to Live Ride Search &rarr;
                 </Link>
               </div>
             </div>

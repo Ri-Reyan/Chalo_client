@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import DriverSidebar, { DriverTab } from "@/components/driver/DriverSidebar";
 import AvailableRequestsView, {
   DriverRideOffer,
@@ -10,7 +10,7 @@ import DriverWalletView from "@/components/driver/DriverWalletView";
 import DriverHistoryView from "@/components/driver/DriverHistoryView";
 import DriverProfileView from "@/components/driver/DriverProfileView";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import { useAuth } from "@/context/auth.context";
+import { useAuth, type UserRole } from "@/context/auth.context";
 import api, { getErrorMessage } from "@/lib/axios";
 import { getSocket, joinRideRoom } from "@/lib/socket";
 import toast from "@/lib/toast";
@@ -19,11 +19,16 @@ import {
   type SelectedLocation,
 } from "@/components/common/LocationPickerModal";
 
+const ALLOWED_DRIVER_ROLES: UserRole[] = ["DRIVER"];
+
 function DriverDashboardContent() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<DriverTab>("requests");
   const [isOnline, setIsOnline] = useState(true);
   const [activeRide, setActiveRide] = useState<DriverRideOffer | null>(null);
+  const [incomingOffer, setIncomingOffer] = useState<DriverRideOffer | null>(
+    null,
+  );
   const [completedRides, setCompletedRides] = useState<DriverRideOffer[]>([]);
   const [balance, setBalance] = useState<number>(() =>
     typeof user?.balance === "number" ? user.balance : 0,
@@ -34,6 +39,12 @@ function DriverDashboardContent() {
     address: string;
   } | null>(null);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const driverName = user?.name || "Driver Partner";
+  const driverEmail = user?.email || "";
+  const [vehicleType, setVehicleType] = useState<"BIKE" | "CAR">(
+    (user?.vehicleType as "BIKE" | "CAR") || "BIKE",
+  );
+  const lastOfferIdRef = useRef<string | null>(null);
 
   // Restore active ride state and driver live balance/status on mount
   useEffect(() => {
@@ -105,13 +116,21 @@ function DriverDashboardContent() {
     if (!user?.id) return;
     const socket = getSocket();
 
-    // Ensure driver joins personal user room and online room
-    socket.emit("join:user", { userId: user.id, role: "DRIVER" });
+    // Ensure driver joins driver pool room and personal channel
+    socket.emit("join:driver", {
+      driverId: user.id,
+      vehicleType: user.vehicleType || vehicleType,
+    });
+    socket.emit("join:user", {
+      userId: user.id,
+      role: "DRIVER",
+      vehicleType: user.vehicleType || vehicleType,
+    });
 
     if (isOnline) {
-      socket.emit("driver:online", { driverId: user.id });
+      socket.emit("driver:online", { driverId: user.id, vehicleType });
     } else {
-      socket.emit("driver:offline");
+      socket.emit("driver:offline", { vehicleType });
     }
 
     const handleRemoteCancelled = (data?: { message?: string }) => {
@@ -120,18 +139,126 @@ function DriverDashboardContent() {
         data?.message || "The passenger cancelled the ride request.",
       );
       setActiveRide(null);
+      setIncomingOffer(null);
       setActiveTab("requests");
     };
 
+    const fetchAvailableRides = async () => {
+      try {
+        const res = await api.get(`/rides/available?vehicleType=${vehicleType}`);
+        if (res.data?.success && res.data?.data?.length > 0) {
+          const first = res.data.data[0];
+          const grossFare = Number(first.grossFare || first.fare || 0);
+          const netEarnings = Number(
+            first.netEarnings || (grossFare * 0.9).toFixed(2),
+          );
+          const formatted: DriverRideOffer = {
+            id: first.id || first.rideId,
+            customerName:
+              first.customerName || first.customer?.name || "Passenger",
+            customerRating:
+              first.customerRating || first.customer?.rating || "4.9 ★",
+            pickup: first.pickup || "Pickup Location",
+            destination: first.destination || "Destination Drop-off",
+            pickupDistanceKm:
+              typeof first.pickupDistanceKm === "number"
+                ? first.pickupDistanceKm
+                : 0.5,
+            distanceKm: Number(first.distanceKm) || 0,
+            grossFare,
+            netEarnings,
+            vehicleType: first.vehicleType || vehicleType,
+            pickupLat: first.pickupLat ? Number(first.pickupLat) : undefined,
+            pickupLng: first.pickupLng ? Number(first.pickupLng) : undefined,
+            destinationLat: first.destinationLat
+              ? Number(first.destinationLat)
+              : undefined,
+            destinationLng: first.destinationLng
+              ? Number(first.destinationLng)
+              : undefined,
+            expiresInSeconds: first.expiresInSeconds || 30,
+          };
+          setIncomingOffer(formatted);
+          setActiveTab("requests");
+        }
+      } catch (err) {
+        console.warn("Could not refetch available rides on socket event:", err);
+      }
+    };
+
+    const handleIncomingRide = (offer: any) => {
+      if (activeRide) return;
+      if (offer) {
+        const offerId = offer.id || offer.rideId;
+        // Deduplicate rapid duplicate socket events for the same offer
+        if (offerId && lastOfferIdRef.current === offerId) {
+          return;
+        }
+        lastOfferIdRef.current = offerId;
+
+        const grossFare = Number(offer.grossFare || offer.fare || 0);
+        const netEarnings = Number(
+          offer.netEarnings || (grossFare * 0.9).toFixed(2),
+        );
+        const formatted: DriverRideOffer = {
+          id: offerId,
+          customerName:
+            offer.customerName || offer.customer?.name || "Passenger",
+          customerRating:
+            offer.customerRating || offer.customer?.rating || "4.9 ★",
+          pickup: offer.pickup || "Pickup Location",
+          destination: offer.destination || "Destination Drop-off",
+          pickupDistanceKm:
+            typeof offer.pickupDistanceKm === "number"
+              ? offer.pickupDistanceKm
+              : 0.5,
+          distanceKm: Number(offer.distanceKm) || 0,
+          grossFare,
+          netEarnings,
+          vehicleType: offer.vehicleType || vehicleType,
+          pickupLat: offer.pickupLat ? Number(offer.pickupLat) : undefined,
+          pickupLng: offer.pickupLng ? Number(offer.pickupLng) : undefined,
+          destinationLat: offer.destinationLat
+            ? Number(offer.destinationLat)
+            : undefined,
+          destinationLng: offer.destinationLng
+            ? Number(offer.destinationLng)
+            : undefined,
+          expiresInSeconds: offer.expiresInSeconds || 30,
+        };
+        setIncomingOffer(formatted);
+        setActiveTab("requests");
+        toast.info(
+          "New Ride Offer Available!",
+          `Passenger nearby. Take-home pay: $${netEarnings.toFixed(2)}`,
+        );
+      }
+    };
+
     socket.on("ride:cancelled", handleRemoteCancelled);
+    socket.on("ride:requested", handleIncomingRide);
+    socket.on("ride:broadcast", handleIncomingRide);
 
     return () => {
       socket.off("ride:cancelled", handleRemoteCancelled);
+      socket.off("ride:requested", handleIncomingRide);
+      socket.off("ride:broadcast", handleIncomingRide);
     };
-  }, [user, isOnline]);
+  }, [user?.id, isOnline, activeRide?.id, vehicleType]);
 
   const handleToggleOnline = async (nextOnline: boolean) => {
     setIsOnline(nextOnline);
+    const socket = getSocket();
+    if (!nextOnline) {
+      setIncomingOffer(null);
+      socket.emit("driver:offline", { vehicleType });
+    } else {
+      socket.emit("driver:online", { driverId: user?.id, vehicleType });
+      socket.emit("join:driver", {
+        driverId: user?.id,
+        vehicleType: user?.vehicleType || vehicleType,
+      });
+    }
     try {
       await api.patch("/drivers/status", { isOnline: nextOnline });
     } catch (e) {
@@ -164,13 +291,8 @@ function DriverDashboardContent() {
     }
   };
 
-  const driverName = user?.name || "Driver Partner";
-  const driverEmail = user?.email || "";
-  const [vehicleType, setVehicleType] = useState<"BIKE" | "CAR">(
-    (user?.vehicleType as "BIKE" | "CAR") || "BIKE",
-  );
-
   const handleAcceptRide = (offer: DriverRideOffer) => {
+    setIncomingOffer(null);
     setActiveRide(offer);
     setActiveTab("ongoing");
   };
@@ -246,6 +368,7 @@ function DriverDashboardContent() {
               onGoOnline={() => setIsOnline(true)}
               onAcceptRide={handleAcceptRide}
               vehicleType={vehicleType}
+              incomingOffer={incomingOffer}
             />
           )}
 
@@ -286,7 +409,7 @@ function DriverDashboardContent() {
 
 export default function DriverDashboardPage() {
   return (
-    <ProtectedRoute allowedRoles={["DRIVER"]}>
+    <ProtectedRoute allowedRoles={ALLOWED_DRIVER_ROLES}>
       <DriverDashboardContent />
     </ProtectedRoute>
   );

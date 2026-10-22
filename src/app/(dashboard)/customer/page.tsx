@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import CustomerSidebar, {
   CustomerTab,
@@ -12,10 +12,12 @@ import LiveTrackingView from "@/components/customer/LiveTrackingView";
 import RideHistoryView from "@/components/customer/RideHistoryView";
 import CustomerProfileView from "@/components/customer/CustomerProfileView";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import { useAuth } from "@/context/auth.context";
+import { useAuth, type UserRole } from "@/context/auth.context";
 import toast from "@/lib/toast";
 import api from "@/lib/axios";
 import { getSocket, joinUserChannel, joinRideRoom, leaveRideRoom } from "@/lib/socket";
+
+const ALLOWED_CUSTOMER_ROLES: UserRole[] = ["CUSTOMER"];
 
 function CustomerDashboardContent() {
   const { user } = useAuth();
@@ -34,6 +36,9 @@ function CustomerDashboardContent() {
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
+          if (parsed.status === "REQUESTED") {
+            parsed.driver = null;
+          }
           setActiveRide(parsed);
           setActiveTab("tracking");
           sessionStorage.removeItem("chalo_active_ride");
@@ -50,6 +55,7 @@ function CustomerDashboardContent() {
         if (!isMounted) return;
         if (res.data?.success && res.data?.data) {
           const ride = res.data.data;
+          const isAccepted = ride.status === "ACCEPTED" && Boolean(ride.driver?.id);
           setActiveRide({
             id: ride.id,
             pickup: ride.pickup || "Pickup Location",
@@ -61,8 +67,8 @@ function CustomerDashboardContent() {
             vehicleType: ride.vehicleType || "BIKE",
             distanceKm: Number(ride.distanceKm) || 0,
             fare: Number(ride.fare) || 0,
-            status: ride.status,
-            driver: ride.driver,
+            status: isAccepted ? "ACCEPTED" : "REQUESTED",
+            driver: isAccepted ? ride.driver : null,
             createdAt: ride.createdAt || new Date().toISOString(),
           });
           setActiveTab("tracking");
@@ -159,25 +165,50 @@ function CustomerDashboardContent() {
   const customerName = user?.name || "Customer";
   const customerEmail = user?.email || "";
 
-  const handleRideCreated = (newRide: ActiveRideState) => {
+  const handleRideCreated = useCallback((newRide: ActiveRideState) => {
     setActiveRide(newRide);
     setActiveTab("tracking");
-  };
+  }, []);
 
-  const handleRideCompleted = (completedRide: ActiveRideState) => {
+  const handleRideCompleted = useCallback((completedRide: ActiveRideState) => {
     setCompletedRides((prev) => [completedRide, ...prev]);
     setActiveRide(null);
     setActiveTab("history");
-  };
+  }, []);
 
-  const handleRideCancelled = () => {
+  const handleRideCancelled = useCallback(() => {
     setActiveRide(null);
     setActiveTab("request");
-  };
+  }, []);
 
-  const handleRebook = () => {
+  const handleRebook = useCallback(() => {
     setActiveTab("request");
-  };
+  }, []);
+
+  const handleRideAcceptedByDriver = useCallback((data: any) => {
+    if (data?.driver) {
+      setActiveRide((prev) => ({
+        id: data.rideId || prev?.id || "",
+        pickup: prev?.pickup || data.pickup || "Pickup Location",
+        destination: prev?.destination || data.destination || "Destination",
+        pickupLat: typeof data.pickupLat === "number" ? data.pickupLat : prev?.pickupLat,
+        pickupLng: typeof data.pickupLng === "number" ? data.pickupLng : prev?.pickupLng,
+        destinationLat: typeof data.destinationLat === "number" ? data.destinationLat : prev?.destinationLat,
+        destinationLng: typeof data.destinationLng === "number" ? data.destinationLng : prev?.destinationLng,
+        vehicleType: data.vehicleType || prev?.vehicleType || "BIKE",
+        distanceKm: Number(data.distanceKm) || prev?.distanceKm || 0,
+        fare: Number(data.fare) || prev?.fare || 0,
+        status: "ACCEPTED",
+        driver: data.driver,
+        createdAt:
+          prev?.createdAt ||
+          new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+      }));
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#FDFCF8] text-[#292524] flex flex-col lg:flex-row font-sans bg-grain">
@@ -200,30 +231,7 @@ function CustomerDashboardContent() {
           {activeTab === "tracking" && (
             <LiveTrackingView
               ride={activeRide}
-              onRideAccepted={(data) => {
-                if (data?.driver) {
-                  setActiveRide((prev) => ({
-                    id: data.rideId || prev?.id || "",
-                    pickup: prev?.pickup || data.pickup || "Pickup Location",
-                    destination: prev?.destination || data.destination || "Destination",
-                    pickupLat: typeof data.pickupLat === "number" ? data.pickupLat : prev?.pickupLat,
-                    pickupLng: typeof data.pickupLng === "number" ? data.pickupLng : prev?.pickupLng,
-                    destinationLat: typeof data.destinationLat === "number" ? data.destinationLat : prev?.destinationLat,
-                    destinationLng: typeof data.destinationLng === "number" ? data.destinationLng : prev?.destinationLng,
-                    vehicleType: data.vehicleType || prev?.vehicleType || "BIKE",
-                    distanceKm: Number(data.distanceKm) || prev?.distanceKm || 0,
-                    fare: Number(data.fare) || prev?.fare || 0,
-                    status: "ACCEPTED",
-                    driver: data.driver,
-                    createdAt:
-                      prev?.createdAt ||
-                      new Date().toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }),
-                  }));
-                }
-              }}
+              onRideAccepted={handleRideAcceptedByDriver}
               onRideCompleted={handleRideCompleted}
               onRideCancelled={handleRideCancelled}
             />
@@ -247,7 +255,7 @@ function CustomerDashboardContent() {
 
 export default function CustomerDashboardPage() {
   return (
-    <ProtectedRoute allowedRoles={["CUSTOMER"]}>
+    <ProtectedRoute allowedRoles={ALLOWED_CUSTOMER_ROLES}>
       <Suspense fallback={<div className="min-h-screen bg-[#FDFCF8]" />}>
         <CustomerDashboardContent />
       </Suspense>

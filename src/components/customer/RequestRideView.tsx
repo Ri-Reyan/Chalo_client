@@ -37,11 +37,14 @@ export interface ActiveRideState {
   fare: number;
   status: "REQUESTED" | "ACCEPTED" | "COMPLETED";
   driver: {
+    id?: string;
     name: string;
-    vehicleModel: string;
-    rating: string;
-    plateNumber: string;
-    etaMinutes: number;
+    vehicleModel?: string;
+    rating?: string;
+    plateNumber?: string;
+    etaMinutes?: number;
+    lat?: number;
+    lng?: number;
   } | null;
   otp?: string;
   createdAt: string;

@@ -21,9 +21,25 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, loading } = useAuth();
+  const [mounted, setMounted] = React.useState(false);
+  const [hasTimedOut, setHasTimedOut] = React.useState(false);
+
+  // Guarantee client mount synchronization and a 2.5s maximum loading safety release
+  useEffect(() => {
+    setMounted(true);
+    const timer = setTimeout(() => {
+      setHasTimedOut(true);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const rolesKey = allowedRoles?.slice().sort().join(",") || "";
 
   useEffect(() => {
-    if (loading) return;
+    if (!mounted) return;
+
+    // If still resolving session and user not cached, wait until resolved or timed out
+    if (loading && !user && !hasTimedOut) return;
 
     if (!isAuthenticated) {
       // Preserve intended destination path in query parameter
@@ -41,10 +57,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         router.replace(targetDashboard);
       }
     }
-  }, [loading, isAuthenticated, user, allowedRoles, router, pathname]);
+  }, [mounted, loading, isAuthenticated, user, rolesKey, router, pathname, hasTimedOut]);
 
-  // Loading state with clean brand aesthetics
-  if (loading) {
+  // SSR & initial client hydration: render consistent loading shell so server & client trees match identically
+  if (!mounted || (loading && !user && !hasTimedOut)) {
     return (
       <div className="min-h-screen bg-[#FDFCF8] flex flex-col items-center justify-center p-4">
         <div className="relative w-12 h-12 rounded-full bg-[#FFB7B2] flex items-center justify-center shadow-md animate-pulse">

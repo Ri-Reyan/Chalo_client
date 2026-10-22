@@ -9,6 +9,7 @@ const SOCKET_URL =
   "http://localhost:4000";
 
 let userSubscription: { userId: string; role?: string } | null = null;
+let driverSubscription: { vehicleType?: string; driverId?: string } | null = null;
 let currentRideRoom: string | null = null;
 
 export const getSocket = (): Socket => {
@@ -25,6 +26,10 @@ export const getSocket = (): Socket => {
       // Re-join user channel upon reconnect if previously registered
       if (userSubscription && socket) {
         socket.emit("join:user", userSubscription);
+      }
+      // Re-join driver pool upon reconnect if registered
+      if (driverSubscription && socket) {
+        socket.emit("join:driver", driverSubscription);
       }
       // Re-join active ride room upon reconnect if active
       if (currentRideRoom && socket) {
@@ -56,6 +61,12 @@ export const joinUserChannel = (userId: string, role?: string) => {
   userSubscription = { userId, role };
   const s = getSocket();
   s.emit("join:user", { userId, role });
+};
+
+export const joinDriverPool = (vehicleType?: string, driverId?: string) => {
+  driverSubscription = { vehicleType, driverId };
+  const s = getSocket();
+  s.emit("join:driver", { vehicleType, driverId });
 };
 
 export default getSocket;

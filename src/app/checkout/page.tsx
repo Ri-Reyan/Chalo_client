@@ -124,8 +124,9 @@ function CheckoutContent() {
       }, 800);
     } catch (err) {
       toast.dismiss(toastId);
-      setIsProcessing(false);
       toast.error("Payment authorization failed", getErrorMessage(err));
+    } finally {
+      setIsProcessing(false);
     }
   };
 

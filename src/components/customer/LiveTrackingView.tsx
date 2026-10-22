@@ -32,25 +32,55 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
   onRideCancelled,
   onRideAccepted,
 }) => {
+  const onRideAcceptedRef = React.useRef(onRideAccepted);
+  onRideAcceptedRef.current = onRideAccepted;
+
+  const onRideCancelledRef = React.useRef(onRideCancelled);
+  onRideCancelledRef.current = onRideCancelled;
+
   const [etaSeconds, setEtaSeconds] = useState(180); // 3 minutes demo countdown
   const [sosActivated, setSosActivated] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [rating, setRating] = useState(5);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-  const [journeyStatus, setJourneyStatus] = useState<string>("DRIVER_EN_ROUTE");
+  const isAcceptedWithDriver =
+    ride?.status === "ACCEPTED" && Boolean(ride?.driver?.id || ride?.driver?.name);
+  const [journeyStatus, setJourneyStatus] = useState<string>(
+    isAcceptedWithDriver ? "DRIVER_EN_ROUTE" : "SEARCHING",
+  );
   const [driverLiveCoords, setDriverLiveCoords] = useState<{
     lat: number;
     lng: number;
-  } | null>(null);
-  const [localDriver, setLocalDriver] = useState<any>(ride?.driver || null);
-  const [localStatus, setLocalStatus] = useState<string>(ride?.status || "REQUESTED");
+  } | null>(
+    isAcceptedWithDriver && ride?.driver?.lat && ride?.driver?.lng
+      ? { lat: Number(ride.driver.lat), lng: Number(ride.driver.lng) }
+      : null,
+  );
+  const [localDriver, setLocalDriver] = useState<any>(
+    isAcceptedWithDriver ? ride?.driver : null,
+  );
+  const [localStatus, setLocalStatus] = useState<string>(
+    ride?.status || "REQUESTED",
+  );
 
   // Keep local state in sync if ride prop updates
   useEffect(() => {
-    if (ride?.driver) {
+    if (ride?.status === "REQUESTED") {
+      setLocalStatus("REQUESTED");
+      setLocalDriver(null);
+      setJourneyStatus("SEARCHING");
+      setDriverLiveCoords(null);
+    } else if (ride?.status === "ACCEPTED" && ride.driver) {
+      setLocalStatus("ACCEPTED");
       setLocalDriver(ride.driver);
-    }
-    if (ride?.status) {
+      setJourneyStatus("DRIVER_EN_ROUTE");
+      if (ride.driver.lat && ride.driver.lng) {
+        setDriverLiveCoords({
+          lat: Number(ride.driver.lat),
+          lng: Number(ride.driver.lng),
+        });
+      }
+    } else if (ride?.status) {
       setLocalStatus(ride.status);
     }
   }, [ride?.driver, ride?.status]);
@@ -74,7 +104,7 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
           "Driver Assigned!",
           `${data.driver?.name || "A driver"} accepted your ride and is en route.`,
         );
-        onRideAccepted?.(data);
+        onRideAcceptedRef.current?.(data);
       }
     };
 
@@ -109,7 +139,7 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
         "Ride Cancelled",
         data?.message || "This ride has been cancelled and refunded.",
       );
-      onRideCancelled();
+      onRideCancelledRef.current?.();
     };
 
     const handleDriverLocation = (data: { lat: number; lng: number }) => {
@@ -136,10 +166,10 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
       socket.off("ride:cancelled", handleRideCancelled);
       socket.off("driver:location", handleDriverLocation);
     };
-  }, [ride?.id, onRideAccepted]);
+  }, [ride?.id]);
 
   useEffect(() => {
-    if (!ride) return;
+    if (!ride?.id) return;
 
     const interval = setInterval(() => {
       setEtaSeconds((prev) => {
@@ -149,7 +179,7 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [ride]);
+  }, [ride?.id]);
 
   if (!ride) {
     return (
@@ -182,7 +212,7 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
             No Drivers Available
           </h2>
           <p className="text-sm text-stone-500 max-w-md mx-auto">
-            No nearby drivers accepted your ride within the search radius.
+            No nearby drivers accepted your ride at this time.
             Your upfront fare of <strong>${Number(ride.fare).toFixed(2)}</strong> has been automatically refunded to your payment method.
           </p>
         </div>
@@ -237,8 +267,12 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
     });
   };
 
-  const assignedDriver = ride.driver || localDriver;
-  const isSearching = !assignedDriver || (ride.status === "REQUESTED" && !localDriver);
+  const hasAcceptedDriver =
+    (localStatus === "ACCEPTED" || ride.status === "ACCEPTED") &&
+    Boolean(localDriver || (ride.status === "ACCEPTED" && ride.driver));
+  const assignedDriver = hasAcceptedDriver ? localDriver || ride.driver : null;
+  const isSearching =
+    !assignedDriver || localStatus === "REQUESTED" || ride.status === "REQUESTED";
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -262,7 +296,7 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
               </span>
               <h1 className="text-xl sm:text-2xl font-bold text-[#292524]">
                 {isSearching
-                  ? "Pinging online drivers within 2.0 km..."
+                  ? "Notifying online drivers..."
                   : journeyStatus === "DRIVER_ARRIVED"
                     ? "Your driver is waiting at pickup"
                     : journeyStatus === "IN_TRANSIT"
@@ -341,7 +375,7 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
                     Dispatching Nearby Drivers
                   </h3>
                   <p className="text-xs text-stone-500 max-w-xs mx-auto">
-                    Payment authorized in escrow. We are notifying nearby drivers within 2.0 km. As soon as a driver accepts, their live details will appear here.
+                    Payment authorized in escrow. We are notifying all online drivers. As soon as a driver accepts, their live details will appear here.
                   </p>
                 </div>
 
