@@ -106,24 +106,8 @@ function CheckoutContent() {
         vehicleType,
         distanceKm,
         fare: amount,
-        status: "ACCEPTED",
-        driver: rideData?.driver || {
-          name:
-            vehicleType === "BIKE"
-              ? "Rahim Ahmed (Rider)"
-              : "Kamal Hossain (Driver)",
-          vehicleModel:
-            vehicleType === "BIKE"
-              ? "Honda CB Hornet 160R"
-              : "Toyota Corolla Axio (Hybrid)",
-          rating: "4.9 ★",
-          plateNumber:
-            vehicleType === "BIKE"
-              ? "DHAKA METRO-HA 4821"
-              : "DHAKA METRO-GA 7392",
-          etaMinutes: 3,
-        },
-        otp: "5821",
+        status: rideData?.status || "REQUESTED",
+        driver: null,
         createdAt: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",

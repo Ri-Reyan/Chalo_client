@@ -12,7 +12,7 @@ import DriverProfileView from "@/components/driver/DriverProfileView";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/context/auth.context";
 import api, { getErrorMessage } from "@/lib/axios";
-import { getSocket } from "@/lib/socket";
+import { getSocket, joinRideRoom } from "@/lib/socket";
 import toast from "@/lib/toast";
 import {
   LocationPickerModal,
@@ -35,11 +35,15 @@ function DriverDashboardContent() {
   } | null>(null);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
-  // Fetch driver live balance and status from backend
+  // Restore active ride state and driver live balance/status on mount
   useEffect(() => {
+    let isMounted = true;
+
+    // Fetch driver live balance and status from backend
     api
       .get("/drivers/balance")
       .then((res) => {
+        if (!isMounted) return;
         if (res.data?.success && res.data?.data) {
           if (typeof res.data.data.balance === "number") {
             setBalance(res.data.data.balance);
@@ -50,7 +54,51 @@ function DriverDashboardContent() {
         }
       })
       .catch(() => {});
-  }, [user]);
+
+    // Unconditionally fetch active ongoing ride to restore state on refresh
+    api
+      .get("/rides/active?role=DRIVER")
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.data?.success && res.data?.data) {
+          const ride = res.data.data;
+          const grossFare = Number(ride.fare) || 0;
+          const netEarnings = Number((grossFare * 0.9).toFixed(2));
+          const activeOffer: DriverRideOffer = {
+            id: ride.id,
+            customerName: ride.customer?.name || "Passenger",
+            customerRating: ride.customer?.rating || "5.0 ★",
+            pickup: ride.pickup || "Pickup Point",
+            destination: ride.destination || "Destination",
+            pickupLat: ride.pickupLat,
+            pickupLng: ride.pickupLng,
+            destinationLat: ride.destinationLat,
+            destinationLng: ride.destinationLng,
+            distanceKm: Number(ride.distanceKm) || 0,
+            pickupDistanceKm: 0.5,
+            grossFare,
+            netEarnings,
+            vehicleType: ride.vehicleType || "BIKE",
+            expiresInSeconds: 0,
+          };
+          setActiveRide(activeOffer);
+          setActiveTab("ongoing");
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not fetch active driver ride:", err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
+
+  // Ensure active ride socket room is joined whenever activeRide is set
+  useEffect(() => {
+    if (!activeRide?.id) return;
+    joinRideRoom(activeRide.id);
+  }, [activeRide?.id]);
 
   // Synchronize online socket room & user channel
   useEffect(() => {

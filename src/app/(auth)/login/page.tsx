@@ -12,7 +12,6 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const { login, user, isAuthenticated, loading } = useAuth();
 
-  const [role, setRole] = useState<"CUSTOMER" | "DRIVER">("CUSTOMER");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -21,20 +20,29 @@ function LoginContent() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
 
-  // Redirect if already authenticated
+  // Dynamic redirect if user is already authenticated
   useEffect(() => {
     if (!loading && isAuthenticated && user) {
       const redirectParam = searchParams.get("redirect");
-      const target =
-        redirectParam || (user.role === "DRIVER" ? "/driver" : "/customer");
+      if (redirectParam) {
+        if (user.role === "DRIVER" && redirectParam.startsWith("/driver")) {
+          router.replace(redirectParam);
+          return;
+        }
+        if (user.role === "CUSTOMER" && redirectParam.startsWith("/customer")) {
+          router.replace(redirectParam);
+          return;
+        }
+      }
+      const target = user.role === "DRIVER" ? "/driver" : "/customer";
       router.replace(target);
     }
   }, [loading, isAuthenticated, user, router, searchParams]);
 
-  const handleQuickFill = (targetRole: "CUSTOMER" | "DRIVER") => {
-    setRole(targetRole);
+  // Quick fill helper for demo accounts
+  const handleQuickFill = (accountType: "CUSTOMER" | "DRIVER") => {
     setErrorMessage("");
-    if (targetRole === "CUSTOMER") {
+    if (accountType === "CUSTOMER") {
       setEmail("customer@chalo.app");
       setPassword("Pass1234!");
     } else {
@@ -48,14 +56,31 @@ function LoginContent() {
     setErrorMessage("");
 
     if (!email || !password) {
-      setErrorMessage("Please fill in both email and password.");
+      setErrorMessage("Please enter both email and password.");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      await login({ email, password });
+      const redirectParam = searchParams.get("redirect") || undefined;
+      // Single unified login call with role-based post-login destination routing
+      const loggedUser = await login({ email, password }, redirectParam);
+
+      // Explicit routing check based on authenticated user role
+      if (redirectParam) {
+        if (loggedUser.role === "DRIVER" && redirectParam.startsWith("/driver")) {
+          router.replace(redirectParam);
+          return;
+        }
+        if (loggedUser.role === "CUSTOMER" && redirectParam.startsWith("/customer")) {
+          router.replace(redirectParam);
+          return;
+        }
+      }
+
+      const destination = loggedUser.role === "DRIVER" ? "/driver" : "/customer";
+      router.replace(destination);
     } catch (err: unknown) {
       setErrorMessage(getErrorMessage(err));
     } finally {
@@ -67,84 +92,54 @@ function LoginContent() {
     <div className="w-full max-w-115 mx-auto animate-in fade-in duration-300">
       {/* Auth Card */}
       <div className="bg-white border border-stone-200/90 rounded-3xl p-7 sm:p-9 shadow-xl shadow-stone-200/50">
-        {/* Role Switcher Tabs */}
-        <div className="flex bg-stone-100/90 p-1.5 rounded-2xl mb-7 border border-stone-200/80">
-          <button
-            type="button"
-            onClick={() => {
-              setRole("CUSTOMER");
-              setErrorMessage("");
-            }}
-            className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-              role === "CUSTOMER"
-                ? "bg-[#292524] text-white shadow-xs"
-                : "text-stone-600 hover:text-[#292524]"
-            }`}
-          >
-            <span>🚶</span>
-            <span>Customer Login</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setRole("DRIVER");
-              setErrorMessage("");
-            }}
-            className={`flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-              role === "DRIVER"
-                ? "bg-[#292524] text-white shadow-xs"
-                : "text-stone-600 hover:text-[#292524]"
-            }`}
-          >
-            <span>🏍️</span>
-            <span>Driver Login</span>
-          </button>
-        </div>
-
-        {/* Headline */}
+        {/* Brand Headline */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#292524] tracking-tight">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E8EFE8] border border-emerald-200 text-emerald-800 text-xs font-bold uppercase tracking-wider mb-3">
+            <span>🛡️</span>
+            <span>Unified Chalo Portal</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#292524] tracking-tight">
             Welcome back
           </h1>
           <p className="mt-1.5 text-xs sm:text-sm text-stone-500">
-            {role === "CUSTOMER"
-              ? "Sign in to your customer account"
-              : "Sign in to your driver partner dashboard"}
+            Sign in with your email and password to access your dashboard.
           </p>
         </div>
 
         {/* Quick Demo Pre-fill Pill Bar */}
         <div className="mb-6 bg-stone-50 border border-stone-200/90 rounded-2xl p-3 text-center">
           <span className="text-[11px] font-bold text-[#78716C] uppercase tracking-wider block mb-2">
-            ⚡ Quick Prototype Demo
+            ⚡ Quick Demo Accounts
           </span>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => handleQuickFill("CUSTOMER")}
-              className="flex-1 py-1.5 px-2 bg-white hover:bg-stone-100 rounded-xl text-xs font-semibold text-stone-700 border border-stone-200 shadow-2xs transition-colors"
+              className="flex-1 py-1.5 px-2 bg-white hover:bg-stone-100 rounded-xl text-xs font-semibold text-stone-700 border border-stone-200 shadow-2xs transition-colors flex items-center justify-center gap-1.5"
             >
-              Fill Customer Creds
+              <span>🚶</span>
+              <span>Customer Demo</span>
             </button>
             <button
               type="button"
               onClick={() => handleQuickFill("DRIVER")}
-              className="flex-1 py-1.5 px-2 bg-white hover:bg-stone-100 rounded-xl text-xs font-semibold text-stone-700 border border-stone-200 shadow-2xs transition-colors"
+              className="flex-1 py-1.5 px-2 bg-white hover:bg-stone-100 rounded-xl text-xs font-semibold text-stone-700 border border-stone-200 shadow-2xs transition-colors flex items-center justify-center gap-1.5"
             >
-              Fill Driver Creds
+              <span>🏍️</span>
+              <span>Driver Demo</span>
             </button>
           </div>
         </div>
 
         {/* Error Alert */}
         {errorMessage && (
-          <div className="mb-5 bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs text-rose-800 flex items-center gap-2">
+          <div className="mb-5 bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs text-rose-800 flex items-center gap-2 animate-in fade-in">
             <span>⚠️</span>
             <span>{errorMessage}</span>
           </div>
         )}
 
-        {/* Login Form */}
+        {/* Single Unified Login Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-[#292524] mb-1.5">
@@ -155,7 +150,7 @@ function LoginContent() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. customer@example.com"
+              placeholder="e.g. user@example.com"
               className="w-full h-11 px-3.5 bg-stone-50 text-[#292524] placeholder-stone-400 rounded-xl border border-stone-200 text-sm focus:outline-none focus:bg-white focus:border-[#FFB7B2] focus:ring-2 focus:ring-[#FFB7B2]/30 transition-all font-medium"
             />
           </div>
@@ -210,14 +205,15 @@ function LoginContent() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full h-12 mt-2 rounded-xl bg-[#FFB7B2] hover:bg-[#FF9E98] text-[#292524] font-bold text-sm tracking-wide transition-all duration-200 hover:shadow-md active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-60"
+            className="w-full h-12 mt-2 rounded-xl bg-[#FFB7B2] hover:bg-[#FF9E98] text-[#292524] font-extrabold text-sm tracking-wide transition-all duration-200 hover:shadow-md active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
           >
             {isSubmitting ? (
-              <div className="w-5 h-5 border-2 border-stone-900 border-t-transparent rounded-full animate-spin" />
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-stone-900 border-t-transparent rounded-full animate-spin" />
+                <span>Signing In...</span>
+              </div>
             ) : (
-              <span>
-                Sign In as {role === "CUSTOMER" ? "Customer" : "Driver"} →
-              </span>
+              <span>Sign In to Chalo &rarr;</span>
             )}
           </button>
         </form>
@@ -226,7 +222,7 @@ function LoginContent() {
         <div className="mt-7 pt-5 border-t border-stone-200 text-center text-xs text-stone-500">
           Don&apos;t have an account yet?{" "}
           <Link
-            href={`/register?role=${role}`}
+            href="/register"
             className="font-bold text-[#292524] hover:underline"
           >
             Create an account
@@ -237,8 +233,8 @@ function LoginContent() {
       <ConfirmModal
         isOpen={isForgotModalOpen}
         onClose={() => setIsForgotModalOpen(false)}
-        title="Prototype Notice"
-        message="Password recovery is disabled for this MVP prototype. Please select a Quick-Fill Demo Account above to sign in instantly."
+        title="Password Reset Notice"
+        message="For this demonstration environment, please use one of the Quick Demo Accounts above or create a new account to test the platform."
         confirmText="Understood"
         variant="info"
         isAlertOnly

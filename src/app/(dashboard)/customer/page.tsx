@@ -24,8 +24,11 @@ function CustomerDashboardContent() {
   const [activeRide, setActiveRide] = useState<ActiveRideState | null>(null);
   const [completedRides, setCompletedRides] = useState<ActiveRideState[]>([]);
 
-  // Check for active ride returned from Stripe Checkout
+  // Unconditionally restore active ride state from server on mount
   useEffect(() => {
+    let isMounted = true;
+
+    // Check session storage first (for immediate post-checkout transition)
     if (typeof window !== "undefined") {
       const saved = sessionStorage.getItem("chalo_active_ride");
       if (saved) {
@@ -34,24 +37,51 @@ function CustomerDashboardContent() {
           setActiveRide(parsed);
           setActiveTab("tracking");
           sessionStorage.removeItem("chalo_active_ride");
-          return;
         } catch (e) {
           console.error("Failed to parse saved active ride:", e);
         }
       }
     }
 
-    if (searchParams.get("tab") === "tracking") {
-      setActiveTab("tracking");
-      // Fetch active ride from server if available
-      api
-        .get("/rides/active?role=CUSTOMER")
-        .then((res) => {
-          if (res.data?.success && res.data?.data) {
-            setActiveRide(res.data.data);
-          }
-        })
-        .catch(() => {});
+    // Unconditionally fetch active ride from server to restore state on refresh
+    api
+      .get("/rides/active?role=CUSTOMER")
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.data?.success && res.data?.data) {
+          const ride = res.data.data;
+          setActiveRide({
+            id: ride.id,
+            pickup: ride.pickup || "Pickup Location",
+            destination: ride.destination || "Destination",
+            pickupLat: ride.pickupLat,
+            pickupLng: ride.pickupLng,
+            destinationLat: ride.destinationLat,
+            destinationLng: ride.destinationLng,
+            vehicleType: ride.vehicleType || "BIKE",
+            distanceKm: Number(ride.distanceKm) || 0,
+            fare: Number(ride.fare) || 0,
+            status: ride.status,
+            driver: ride.driver,
+            createdAt: ride.createdAt || new Date().toISOString(),
+          });
+          setActiveTab("tracking");
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not fetch active customer ride:", err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
+
+  // Synchronize tab if explicitly navigated via URL search param
+  useEffect(() => {
+    const tabParam = searchParams.get("tab") as CustomerTab | null;
+    if (tabParam) {
+      setActiveTab(tabParam);
     }
   }, [searchParams]);
 

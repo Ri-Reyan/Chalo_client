@@ -10,7 +10,8 @@ export type RideStatus =
   | "REQUESTED"
   | "ACCEPTED"
   | "COMPLETED"
-  | "NO_DRIVER_FOUND";
+  | "NO_DRIVER_FOUND"
+  | "CANCELLED";
 
 export type PaymentStatus = "HELD" | "CAPTURED" | "REFUNDED";
 

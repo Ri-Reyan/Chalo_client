@@ -94,6 +94,24 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
       setShowRatingModal(true);
     };
 
+    const handleNoDriver = (data?: any) => {
+      setLocalStatus("NO_DRIVER_FOUND");
+      toast.error(
+        "No Driver Available",
+        data?.message ||
+          "All nearby drivers are currently busy. Your fare hold has been automatically refunded.",
+      );
+    };
+
+    const handleRideCancelled = (data?: any) => {
+      setLocalStatus("CANCELLED");
+      toast.info(
+        "Ride Cancelled",
+        data?.message || "This ride has been cancelled and refunded.",
+      );
+      onRideCancelled();
+    };
+
     const handleDriverLocation = (data: { lat: number; lng: number }) => {
       if (data?.lat && data?.lng) {
         setDriverLiveCoords({ lat: data.lat, lng: data.lng });
@@ -104,6 +122,8 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
     socket.on("driver:arrived", handleDriverArrived);
     socket.on("ride:started", handleTripStarted);
     socket.on("ride:completed", handleTripCompleted);
+    socket.on("ride:no_driver", handleNoDriver);
+    socket.on("ride:cancelled", handleRideCancelled);
     socket.on("driver:location", handleDriverLocation);
 
     return () => {
@@ -112,6 +132,8 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
       socket.off("driver:arrived", handleDriverArrived);
       socket.off("ride:started", handleTripStarted);
       socket.off("ride:completed", handleTripCompleted);
+      socket.off("ride:no_driver", handleNoDriver);
+      socket.off("ride:cancelled", handleRideCancelled);
       socket.off("driver:location", handleDriverLocation);
     };
   }, [ride?.id, onRideAccepted]);
@@ -142,6 +164,36 @@ export const LiveTrackingView: React.FC<LiveTrackingViewProps> = ({
           You don&apos;t currently have an ongoing trip. Request a ride to track
           your driver live on the map.
         </p>
+      </div>
+    );
+  }
+
+  if (localStatus === "NO_DRIVER_FOUND") {
+    return (
+      <div className="bg-white border border-stone-200/80 rounded-3xl p-10 text-center shadow-sm space-y-5 animate-in fade-in">
+        <div className="w-16 h-16 rounded-3xl bg-amber-50 border border-amber-300 text-amber-700 flex items-center justify-center mx-auto text-3xl shadow-xs">
+          ⏱️
+        </div>
+        <div className="space-y-1">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 font-bold text-xs uppercase tracking-wider border border-amber-200">
+            Matching Expired
+          </span>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#292524]">
+            No Drivers Available
+          </h2>
+          <p className="text-sm text-stone-500 max-w-md mx-auto">
+            No nearby drivers accepted your ride within the search radius.
+            Your upfront fare of <strong>${Number(ride.fare).toFixed(2)}</strong> has been automatically refunded to your payment method.
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2 max-w-sm mx-auto">
+          <button
+            onClick={onRideCancelled}
+            className="flex-1 py-3.5 px-5 rounded-2xl bg-[#FFB7B2] hover:bg-[#FF9E98] text-[#292524] font-extrabold text-xs transition-all shadow-xs"
+          >
+            Request New Ride
+          </button>
+        </div>
       </div>
     );
   }

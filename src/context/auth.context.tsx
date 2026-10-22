@@ -44,7 +44,7 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
-  login: (credentials: LoginCredentials) => Promise<User>;
+  login: (credentials: LoginCredentials, redirectPath?: string) => Promise<User>;
   register: (data: RegisterCredentials) => Promise<User>;
   logout: () => Promise<void>;
   getMe: () => Promise<User | null>;
@@ -146,7 +146,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
    * Authenticate user with email and password via POST /auth/login
    */
   const login = useCallback(
-    async (credentials: LoginCredentials): Promise<User> => {
+    async (credentials: LoginCredentials, redirectPath?: string): Promise<User> => {
       try {
         setLoading(true);
         setError(null);
@@ -177,8 +177,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(loggedUser);
         persistUser(loggedUser);
 
-        // Redirect user based on authenticated role
-        const targetPath = getDashboardPath(loggedUser.role);
+        // Role-based dynamic post-login routing
+        let targetPath = getDashboardPath(loggedUser.role);
+        if (redirectPath) {
+          if (loggedUser.role === "DRIVER" && redirectPath.startsWith("/driver")) {
+            targetPath = redirectPath;
+          } else if (loggedUser.role === "CUSTOMER" && redirectPath.startsWith("/customer")) {
+            targetPath = redirectPath;
+          }
+        }
         router.push(targetPath);
 
         return loggedUser;
